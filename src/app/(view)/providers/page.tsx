@@ -1,57 +1,29 @@
 // app/admin/provider-approval/page.tsx
 import { Suspense } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { container } from '@/app/lib/diContainer';
+import { ProviderController } from '@/app/(controller)/providers/providerController';
 
-// Mock data fetching functions (in a real app, these would connect to your database)
+
+
+  const provider = container.resolve(ProviderController)
+
+
+
+
+
+
+
 async function getTransportationProviders(status = 'pending') {
-  return [
-    {
-      providerId: "tp1",
-      licenseMmediaUrls: ["/api/placeholder/400/300"],
-      vehicleMediaUrls: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
-      vehicleType: "Sedan",
-      seatsAvailable: 4,
-      createdAt: new Date("2025-04-15"),
-      accountStatus: "pending",
-      user: {
-        id: "u1",
-        name: "John Driver",
-        email: "john.driver@example.com",
-        phone: "+1234567890"
-      }
-    },
-    {
-      providerId: "tp2",
-      licenseMmediaUrls: ["/api/placeholder/400/300"],
-      vehicleMediaUrls: ["/api/placeholder/400/300"],
-      vehicleType: "SUV",
-      seatsAvailable: 7,
-      createdAt: new Date("2025-04-14"),
-      accountStatus: "pending",
-      user: {
-        id: "u2",
-        name: "Maria Transit",
-        email: "maria.transit@example.com",
-        phone: "+1987654321"
-      }
-    },
-    {
-      providerId: "tp3",
-      licenseMmediaUrls: ["/api/placeholder/400/300"],
-      vehicleMediaUrls: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
-      vehicleType: "Van",
-      seatsAvailable: 12,
-      createdAt: new Date("2025-04-13"),
-      accountStatus: "pending",
-      user: {
-        id: "u3",
-        name: "Alex Shuttle",
-        email: "alex.shuttle@example.com",
-        phone: "+1122334455"
-      }
-    }
-  ];
+   
+
+  const response = await provider.getPendingTransportationProviders()
+  console.log("-------------------------------")
+  console.log(response)
+  console.log("-------------------------------")
+
+  
+  return response;
 }
 
 async function getAccommodationProviders(status = 'pending') {
@@ -122,12 +94,12 @@ async function TransportationProviderTable({ status, search }) {
               <td className="px-6 py-4">
                 <div className="flex items-center">
                   <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <span className="text-gray-500 dark:text-gray-300">{provider.user.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-gray-500 dark:text-gray-300">{provider.user.username.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{provider.user.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{provider.user.username}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">{provider.user.email}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{provider.user.phone}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{provider.user.email}</div>
                   </div>
                 </div>
               </td>
@@ -153,7 +125,7 @@ async function TransportationProviderTable({ status, search }) {
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {provider.createdAt.toDateString()}
+                {provider.user.createdAt.toString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex flex-col space-y-2">
@@ -163,7 +135,7 @@ async function TransportationProviderTable({ status, search }) {
                   <button className="btn-outlined text-sm py-1 text-error">
                     Reject
                   </button>
-                  <Link href={`/admin/transportation/${provider.providerId}`} className="btn-text text-primary text-center">
+                  <Link href={`/providers/${provider.providerId}`} className="btn-text text-primary text-center">
                     View Details
                   </Link>
                 </div>
@@ -246,7 +218,7 @@ async function AccommodationProviderTable({ status, search }) {
                   <button className="btn-outlined text-sm py-1 text-error">
                     Reject
                   </button>
-                  <Link href={`/admin/accommodation/${provider.providerId}`} className="btn-text text-primary text-center">
+                  <Link href={`/providers/${provider.providerId}`} className="btn-text text-primary text-center">
                     View Details
                   </Link>
                 </div>
@@ -274,41 +246,7 @@ function TableSkeleton() {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-          {[...Array(3)].map((_, index) => (
-            <tr key={index}>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse mr-4"></div>
-                  <div>
-                    <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
-                    <div className="h-3 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                  </div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
-                <div className="h-3 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex space-x-2">
-                  <div className="h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                  <div className="h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
-                <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+
       </table>
     </div>
   );
@@ -317,7 +255,7 @@ function TableSkeleton() {
 // Filter Section Component
 function ProviderFilterSection({ providerType }) {
   return (
-    <form action="/admin/provider-approval" method="GET">
+    <form action="/providers" method="GET">
       <input type="hidden" name="tab" value={providerType} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
@@ -370,21 +308,10 @@ export default function ProviderApprovalPage({ searchParams }) {
   
   return (
     <div className="min-h-screen transition-colors duration-300 flex flex-col">
-      <div className="app-bar w-full p-4 bg-light-surface dark:bg-dark-surface shadow-md fixed top-0 left-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-headline-md">Provider Approval Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning text-warning-800">
-              {tab === 'transportation' ? '3 Pending Transportation' : '2 Pending Accommodation'}
-            </span>
-            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <span className="text-gray-500 dark:text-gray-300">A</span>
-            </div>
-          </div>
-        </div>
-      </div>
+
+
       
-      <div className="px-6 py-8 mt-16 ml-64">  {/* Adjust margins based on your layout */}
+      <div className="px-6 py-8  ml-64">  {/* Adjust margins based on your layout */}
         <div className="mb-6">
           <h1 className="text-headline-lg font-semibold mb-2">Provider Approval</h1>
           <p className="text-body-md text-gray-600 dark:text-gray-400">
@@ -395,7 +322,7 @@ export default function ProviderApprovalPage({ searchParams }) {
         {/* Tab Navigation */}
         <div className="mb-6 flex border-b border-gray-200 dark:border-gray-700">
           <Link 
-            href="/admin/provider-approval?tab=transportation"
+            href="/providers?tab=transportation"
             className={`py-2 px-4 border-b-2 font-medium text-sm ${
               tab === 'transportation' 
                 ? 'border-primary text-primary' 
@@ -405,7 +332,7 @@ export default function ProviderApprovalPage({ searchParams }) {
             Transportation Providers
           </Link>
           <Link 
-            href="/admin/provider-approval?tab=accommodation"
+            href="/providers?tab=accommodation"
             className={`py-2 px-4 border-b-2 font-medium text-sm ${
               tab === 'accommodation' 
                 ? 'border-primary text-primary' 

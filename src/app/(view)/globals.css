@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Light mode variables (blue theme) */
-    --primary: 220.9 39.3% 11%;          /* #2196F3 - Material Blue */
+    --primary: 33, 150, 243;          /* #2196F3 - Material Blue */
     --primary-light: 66, 165, 245;    /* #42A5F5 - Blue 400 */
     --primary-dark: 13, 71, 161;      /* #0D47A1 - Darker for hover */
     
@@ -14,46 +14,23 @@
     --warning: 255, 160, 0;           /* #FFA000 - Amber 700 */
     --info: 2, 136, 209;              /* #0288D1 - Light Blue 700 */
     
-    --background: 0 0% 100%;      /* #F5F5F5 - Slightly off-white */
+    --background: 245, 245, 245;      /* #F5F5F5 - Slightly off-white */
     --surface: 255, 255, 255;         /* #FFFFFF - White */
     --text: 0, 0, 0, 0.87;            /* Black87 - Standard Material text */
     
     /* Typography styling */
     font-family: system-ui, -apple-system, sans-serif;
-    --foreground: 224 71.4% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 224 71.4% 4.1%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
   }
 
   .dark {
     /* Dark mode variables (same primary colors but dark backgrounds) */
-    --primary: 210 20% 98%;          /* Same blue for consistency */
+    --primary: 33, 150, 243;          /* Same blue for consistency */
     --primary-light: 66, 165, 245;    /* Same blue light */
     --primary-dark: 13, 71, 161;      /* Same blue dark */
     
-    --background: 224 71.4% 4.1%;         /* #121212 - Standard Material dark background */
+    --background: 18, 18, 18;         /* #121212 - Standard Material dark background */
     --surface: 32, 32, 32;            /* #202020 - Slightly lighter than background */
-    --text: 255, 255, 255;            /* White text for dark mode */            --foreground: 210 20% 98%;            --card: 224 71.4% 4.1%;            --card-foreground: 210 20% 98%;            --popover: 224 71.4% 4.1%;            --popover-foreground: 210 20% 98%;            --primary-foreground: 220.9 39.3% 11%;            --secondary: 215 27.9% 16.9%;            --secondary-foreground: 210 20% 98%;            --muted: 215 27.9% 16.9%;            --muted-foreground: 217.9 10.6% 64.9%;            --accent: 215 27.9% 16.9%;            --accent-foreground: 210 20% 98%;            --destructive: 0 62.8% 30.6%;            --destructive-foreground: 210 20% 98%;            --border: 215 27.9% 16.9%;            --input: 215 27.9% 16.9%;            --ring: 216 12.2% 83.9%;            --chart-1: 220 70% 50%;            --chart-2: 160 60% 45%;            --chart-3: 30 80% 55%;            --chart-4: 280 65% 60%;            --chart-5: 340 75% 55%;
+    --text: 255, 255, 255;            /* White text for dark mode */
   }
 
   body {
@@ -157,16 +134,5 @@
   }
   50% {
     transform: translateY(-20px);
-  }
-}
-
-
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }
