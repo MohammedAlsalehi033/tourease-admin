@@ -3,14 +3,26 @@ import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
 import { ContentController } from '@/app/(controller)/content/contentController';
 
+
+
+async function deleteCommentAction(questionId: number) {
+  'use server';
+  try {
+    const commentsDI = container.resolve(ContentController);
+    await commentsDI.blockContent(questionId, /* adminId */);
+    return { success: true, message: 'Comment deleted successfully' };
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    return { success: false, message: `Failed to delete comment: ${error.message}` };
+  }
+}
+
+
 async function ContentTable({ status, search }) {
-  // Fetch data from backend based on filters
   const contentController = container.resolve(ContentController);
   const response = await contentController.getAllQuestions(1, 10, { status, search }); // Adjust page size as needed
   
-  // Transform data for display
   const transformedContent = response.data.map(item => {
-    // Determine content status if not explicitly provided
     const contentStatus = item.status || (item.downvotes > 2 ? 'flagged' : 'active');
     
     return {
@@ -33,7 +45,6 @@ async function ContentTable({ status, search }) {
     };
   });
   
-  // Filter by search if not done by API
   let filteredContent = transformedContent;
   if (search) {
     const searchLower = search.toLowerCase();
@@ -115,20 +126,22 @@ async function ContentTable({ status, search }) {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex space-x-2">
                   <Link 
-                    href={`/questions/${item.id}`}
+                    href={`/moderation/questions/${item.id}`}
                     className="text-primary hover:text-primary-light"
                   >
                     View
                   </Link>
                   
                   {item.status !== 'blocked' ? (
-                    <button
-                      className="text-red-600 hover:text-red-900"
-                      data-content-id={item.id}
-                      data-action="block"
-                    >
-                      Block
-                    </button>
+                    <form action={deleteCommentAction.bind(null, item.id,)}>
+                      <button
+                        className="text-red-600 hover:text-red-900"
+                        data-content-id={item.id}
+                        data-action="block"
+                      >
+                        delete
+                      </button>
+                    </form>
                   ) : (
                     <button
                       className="text-green-600 hover:text-green-900"

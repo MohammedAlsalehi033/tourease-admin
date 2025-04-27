@@ -22,17 +22,16 @@ export class ContentController {
     return this.contentRepository.getAllContent(page, pageSize, filter);
   }
 
-  async getContentById(id: number): Promise<ContentItem | null> {
+  async getCommentsByQuestionId(id: number): Promise<ContentItem | null> {
     return this.contentRepository.getContentById(id);
   }
 
-  async blockContent(contentId: number, reason: string, adminId: string): Promise<BlockContentResponse> {
-    // Add any business logic here, e.g., validation or logging
-    if (!reason) {
-      reason = 'Violation of platform policies';
-    }
-    
-    return this.contentRepository.blockContent(contentId, reason, adminId);
+  async blockQuestion(contentId: number, adminId: string = ""): Promise<BlockContentResponse> {
+    return this.contentRepository.deleteQuestion(contentId, adminId);
+  }
+
+  async blockComment(contentId: number, adminId: string = ""): Promise<BlockContentResponse> {
+    return this.contentRepository.deleteComment(contentId, adminId);
   }
 
   async unblockContent(contentId: number, adminId: string): Promise<BlockContentResponse> {

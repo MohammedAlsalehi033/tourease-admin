@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
 import {  UserController } from '@/app/(controller)/user/userController';
@@ -11,28 +11,22 @@ import FilterSection from './FilterSection';
 
 async function UsersTable({ role, status, search }) {
   const userController = container.resolve(UserController);
-  const response = await userController.getAllUsers(); // Ideally this would accept filter params
+  const response = await userController.getAllUsers(); 
   
   // Transform and filter data
   let transformedUsers = response.users.map(user => {
-    const userRole = user.roles && user.roles.length > 0 ? user.roles[0].toLowerCase() : 'traveler';
     
     return {
-      id: user.id.substring(0, 6),
+      id: user.id,
       name: user.username.split('@')[0] || 'Unknown',
       email: user.email,
-      role: userRole,
+      role: user.roles,
       status: user.accountStatus === 'active' ? 'Active' : 'Deactivated',
       lastActive: user.updatedAt ? user.updatedAt.split('T')[0] : new Date().toISOString().split('T')[0]
     };
   });
   
-  // Apply filters (if backend doesn't support filtering)
-  if (role) {
-    transformedUsers = transformedUsers.filter(user => 
-      user.role.toLowerCase() === role.toLowerCase()
-    );
-  }
+ 
   
   if (status) {
     transformedUsers = transformedUsers.filter(user => 
@@ -72,11 +66,15 @@ async function UsersTable({ role, status, search }) {
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.name}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.email}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  user.role === 'Provider' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                }`}>
-                  {user.role}
-                </span>
+              <span className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium
+                   bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200`}>
+  {user.role.map((role, index) => (
+    <React.Fragment key={index}>
+      {index > 0 && <div className="w-1 h-1 bg-purple-400 rounded-full"></div>}
+      {role}
+    </React.Fragment>
+  ))}
+</span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

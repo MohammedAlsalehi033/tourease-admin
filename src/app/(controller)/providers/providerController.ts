@@ -9,7 +9,6 @@ export class ProviderController {
     @inject(ProvdersRepository) private adminRepository: ProvdersRepository
   ) {}
 
-  // Transportation Provider Methods
   async getPendingTransportationProviders(status: string = 'active'): Promise<TransportationProvider[]> {
     console.log(`Controller: Fetching transportation providers with status: ${status}`);
     return await this.adminRepository.getTransportationProvidersByStatus(status);
@@ -30,7 +29,6 @@ export class ProviderController {
     return await this.adminRepository.updateTransportationProviderStatus(providerId, 'rejected');
   }
 
-  // Accommodation Provider Methods
   async getPendingAccommodationProviders(): Promise<AccommodationProvider[]> {
     console.log('Controller: Fetching pending accommodation providers');
     return await this.adminRepository.getPendingAccommodationProviders();
@@ -51,7 +49,6 @@ export class ProviderController {
     return await this.adminRepository.updateAccommodationProviderStatus(providerId, 'rejected');
   }
 
-  // Helper methods that combine or transform data could be added here
   async getDashboardStats(): Promise<{
     pendingTransportation: number;
     pendingAccommodation: number;

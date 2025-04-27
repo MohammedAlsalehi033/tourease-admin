@@ -65,7 +65,7 @@ export class ContentRepository {
 
   async getContentById(id: number): Promise<ContentItem | null> {
     try {
-      const response = await fetch(`${this.apiBaseUrl}/${id}`);
+      const response = await fetch(`http://localhost:3000/api/commments/?id=${id}`);
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -81,7 +81,6 @@ export class ContentRepository {
       
       const item = responseData.data;
       
-      // Add moderation status if not present
       if (!item.status) {
         const isFlagged = item.downvotes > 5; // Example condition
         item.status = isFlagged ? 'flagged' : 'active';
@@ -95,34 +94,96 @@ export class ContentRepository {
     }
   }
 
-  async blockContent(contentId: number, reason: string, adminId: string): Promise<BlockContentResponse> {
+  async deleteQuestion(questionId: number, adminId: string) {
+    console.log(questionId)
     try {
-      const response = await fetch(`${this.apiBaseUrl}/${contentId}/block`, {
-        method: 'POST',
+      const response = await fetch(`${this.apiBaseUrl}/${questionId}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          reason,
           adminId,
         }),
       });
-
+  
       if (!response.ok) {
-        throw new Error(`Failed to block content: ${response.statusText}`);
+         let errorBody = null;
+         try {
+           errorBody = await response.json();
+         } catch(e) {
+           // Ignore error
+         }
+         const errorMessage = errorBody?.message || response.statusText;
+        throw new Error(`Failed to delete question (${response.status}): ${errorMessage}`);
       }
-
+  
+      if (response.status === 204) {
+           return {
+               success: true,
+               message: 'Question deleted successfully',
+           };
+      }
+  
       const data = await response.json();
       return {
-        success: data.success,
-        message: data.message || 'Content blocked successfully',
+        success: data.success ?? true,
+        message: data.message || 'Question deleted successfully',
         data: data.data
       };
+  
     } catch (error) {
-      console.error('Error blocking content:', error);
+      console.error('Error deleting question:', error);
       throw error;
     }
   }
+
+  async deleteComment(commentID: number, adminId: string) {
+    try {
+
+      //http://localhost:3000/api/comments/5
+      const response = await fetch(`http://localhost:3000/api/comments/${commentID}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adminId,
+        }),
+      });
+  
+      if (!response.ok) {
+         let errorBody = null;
+         try {
+           errorBody = await response.json();
+         } catch(e) {
+           // Ignore error
+         }
+         const errorMessage = errorBody?.message || response.statusText;
+        throw new Error(`Failed to delete question (${response.status}): ${errorMessage}`);
+      }
+  
+      if (response.status === 204) {
+           return {
+               success: true,
+               message: 'Question deleted successfully',
+           };
+      }
+  
+      const data = await response.json();
+      return {
+        success: data.success ?? true,
+        message: data.message || 'Question deleted successfully',
+        data: data.data
+      };
+  
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      throw error;
+    }
+  }
+
+
 
   async unblockContent(contentId: number, adminId: string): Promise<BlockContentResponse> {
     try {

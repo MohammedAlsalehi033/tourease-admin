@@ -11,6 +11,17 @@ import { ProviderController } from '@/app/(controller)/providers/providerControl
 
 
 
+  async function approveTransporationProvider(providerId : string){
+    'use server'
+     const response = await provider.approveTransportationProvider(providerId)
+     return response;
+  }
+
+  async function rejectTransporationProvider(providerId : string){
+    'use server'
+     const response = await provider.rejectTransportationProvider(providerId)
+     return response;
+  }
 
 
 
@@ -18,48 +29,19 @@ async function getTransportationProviders(status = 'pending') {
    
 
   const response = await provider.getPendingTransportationProviders()
-  console.log("-------------------------------")
   console.log(response)
-  console.log("-------------------------------")
 
   
   return response;
 }
 
 async function getAccommodationProviders(status = 'pending') {
-  return [
-    {
-      providerId: "ap1",
-      accommodationName: "Mountain View Hotel",
-      address: "123 Peak Road, Highland City",
-      contactNumber: "+1122334455",
-      mediaUrls: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
-      createdAt: new Date("2025-04-16"),
-      user: {
-        id: "u4",
-        name: "Robert Host",
-        email: "robert.host@example.com",
-        phone: "+1122334455"
-      }
-    },
-    {
-      providerId: "ap2",
-      accommodationName: "Seaside Cottage",
-      address: "45 Beach Avenue, Coastal Town",
-      contactNumber: "+1567890123",
-      mediaUrls: ["/api/placeholder/400/300"],
-      createdAt: new Date("2025-04-12"),
-      user: {
-        id: "u5",
-        name: "Lisa Lodge",
-        email: "lisa.lodge@example.com",
-        phone: "+1567890123"
-      }
-    }
-  ];
+  const response = await provider.getPendingAccommodationProviders()
+
+  
+  return response;
 }
 
-// Transportation Provider Table Component
 async function TransportationProviderTable({ status, search }) {
   const providers = await getTransportationProviders(status);
   
@@ -129,12 +111,17 @@ async function TransportationProviderTable({ status, search }) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex flex-col space-y-2">
-                  <button className="btn-primary text-sm py-1">
-                    Approve
-                  </button>
-                  <button className="btn-outlined text-sm py-1 text-error">
-                    Reject
-                  </button>
+                <form action={approveTransporationProvider.bind(null, provider.providerId)}>
+        <button type="submit" className="btn-primary text-sm py-1">
+          Approve
+        </button>
+      </form>
+
+      <form action={rejectTransporationProvider.bind(null, provider.providerId)}>
+        <button type="submit" className="btn-outlined text-sm py-1 text-error">
+          Reject
+        </button>
+      </form>
                   <Link href={`/providers/${provider.providerId}`} className="btn-text text-primary text-center">
                     View Details
                   </Link>
@@ -148,7 +135,6 @@ async function TransportationProviderTable({ status, search }) {
   );
 }
 
-// Accommodation Provider Table Component
 async function AccommodationProviderTable({ status, search }) {
   const providers = await getAccommodationProviders(status);
   
@@ -231,7 +217,6 @@ async function AccommodationProviderTable({ status, search }) {
   );
 }
 
-// Loading Skeleton Component
 function TableSkeleton() {
   return (
     <div className="overflow-x-auto">
@@ -252,7 +237,6 @@ function TableSkeleton() {
   );
 }
 
-// Filter Section Component
 function ProviderFilterSection({ providerType }) {
   return (
     <form action="/providers" method="GET">
@@ -300,7 +284,6 @@ function ProviderFilterSection({ providerType }) {
   );
 }
 
-// Main Page Component
 export default function ProviderApprovalPage({ searchParams }) {
   const tab = searchParams?.tab || 'transportation';
   const status = searchParams?.status || 'pending';
