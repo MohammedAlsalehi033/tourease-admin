@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
 import { ContentController } from '@/app/(controller)/content/contentController';
+import { revalidatePath } from 'next/cache';
 
 
 
@@ -9,7 +10,8 @@ async function deleteCommentAction(questionId: number) {
   'use server';
   try {
     const commentsDI = container.resolve(ContentController);
-    await commentsDI.blockContent(questionId, /* adminId */);
+    await commentsDI.blockQuestion(questionId, /* adminId */);
+    revalidatePath("/")
     return { success: true, message: 'Comment deleted successfully' };
   } catch (error) {
     console.error('Error deleting comment:', error);
