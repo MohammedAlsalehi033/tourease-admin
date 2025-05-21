@@ -74,6 +74,33 @@ const UserProfilePage = () => {
         }
     };
 
+
+    const handleActivateUser = async ()=>{
+               if (!id || !isBlocking) return;
+        const confirmBlock = window.confirm(`Are you sure you want to Unblock this user?`);
+        if (!confirmBlock) return;
+        setIsBlocking(true);
+        try {
+            const userController = container.resolve(UserController);
+            const blockResponse = await userController.blockUser(id);
+            alert(blockResponse?.message || "User status updated.");
+
+            if (blockResponse?.success && blockResponse?.data) {
+                 setUser(blockResponse.data); 
+            } else {
+                 const updatedUser = await userController.getUserById(id);
+                  if (updatedUser && updatedUser.data) {
+                     setUser(updatedUser.data);
+                 } else if (updatedUser && updatedUser.id) {
+                     setUser(updatedUser);
+                 }
+            }
+        } catch (err: any) {
+            alert(`Failed to block user: ${err.message}`);
+        } finally {
+             setIsBlocking(false);
+        }
+    }
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading user profile...</div>;
     }

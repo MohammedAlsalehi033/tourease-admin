@@ -1,8 +1,8 @@
 'use client';
 import "reflect-metadata";
-import React, { useState, useEffect, ChangeEvent } from 'react'; // Import ChangeEvent
-import { AnalyticsController } from '@/app/(controller)/analytics/analyticsController'; // Adjust path
-import { container } from '@/app/lib/diContainer'; // Adjust path
+import React, { useState, useEffect, ChangeEvent } from 'react';
+import { AnalyticsController } from '@/app/(controller)/analytics/analyticsController';
+import { container } from '@/app/lib/diContainer';
 import {
     AnalyticsOverviewData,
     UserAnalyticsData,
@@ -10,13 +10,21 @@ import {
     ContentAnalyticsData,
     RatingAnalyticsData,
     ProviderAnalyticsData,
-    AnalyticsFilters, // Use the filter type
+    AnalyticsFilters,
     AnalyticsExportFilters
-} from '@/app/(model)/analytics/analyticsModel'; // Adjust path
+} from '@/app/(model)/analytics/analyticsModel';
+
+
+// Chart components
+import OverviewStats from './components/OverviewStats';
+import UserAnalyticsChart from './components/UserAnalyticsChart';
+import ContentAnalyticsChart from './components/ContentAnalyticsChart';
+import RatingAnalyticsChart from './components/RatingAnalyticsChart';
+import ProviderAnalyticsChart from './components/ProviderAnalyticsChart';
 
 type LoadingState = Record<string, boolean>;
 type ErrorState = Record<string, string | null>;
-type ExportFormat = 'json' | 'pdf' | 'csv'; // Type for export format
+type ExportFormat = 'json' | 'pdf' | 'csv';
 
 let analyticsController: AnalyticsController;
 try {
@@ -26,8 +34,6 @@ try {
 }
 
 export default function AnalyticsPage() {
-
-
     const [overviewData, setOverviewData] = useState<AnalyticsOverviewData | null>(null);
     const [userAnalytics, setUserAnalytics] = useState<UserAnalyticsData | null>(null);
     const [transportBookings, setTransportBookings] = useState<BookingAnalyticsData | null>(null);
@@ -48,8 +54,7 @@ export default function AnalyticsPage() {
     });
 
     const [exportFormat, setExportFormat] = useState<ExportFormat>('json');
-    const [reportType, setReportType] = useState<string>('overview'); // reportType could be more strictly typed if desired
-
+    const [reportType, setReportType] = useState<string>('overview');
 
     const handleFilterChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -62,7 +67,7 @@ export default function AnalyticsPage() {
 
     function fetchOverview() {
         setLoading(prev => ({...prev, overview: true}));
-        setErrors(prev => ({...prev, overview: null})); // Clear previous error
+        setErrors(prev => ({...prev, overview: null}));
         analyticsController.getAnalyticsOverview()
             .then(data => setOverviewData(data))
             .catch(err => setErrors(prev => ({...prev, overview: err instanceof Error ? err.message : String(err)})))
@@ -72,7 +77,7 @@ export default function AnalyticsPage() {
     function fetchUserAnalytics() {
         setLoading(prev => ({...prev, users: true}));
         setErrors(prev => ({...prev, users: null}));
-        analyticsController.getUserAnalytics(filters) // Pass current filters
+        analyticsController.getUserAnalytics(filters)
             .then(data => setUserAnalytics(data))
             .catch(err => setErrors(prev => ({...prev, users: err instanceof Error ? err.message : String(err)})))
             .finally(() => setLoading(prev => ({...prev, users: false})));
@@ -80,43 +85,43 @@ export default function AnalyticsPage() {
 
     function fetchTransportBookings() {
         setLoading(prev => ({...prev, transport: true}));
-         setErrors(prev => ({...prev, transport: null}));
+        setErrors(prev => ({...prev, transport: null}));
         analyticsController.getTransportationBookingAnalytics(filters)
             .then(data => setTransportBookings(data))
             .catch(err => setErrors(prev => ({...prev, transport: err instanceof Error ? err.message : String(err)})))
             .finally(() => setLoading(prev => ({...prev, transport: false})));
     }
 
-     function fetchAccomBookings() {
+    function fetchAccomBookings() {
         setLoading(prev => ({...prev, accom: true}));
-         setErrors(prev => ({...prev, accom: null}));
+        setErrors(prev => ({...prev, accom: null}));
         analyticsController.getAccommodationBookingAnalytics(filters)
             .then(data => setAccomBookings(data))
             .catch(err => setErrors(prev => ({...prev, accom: err instanceof Error ? err.message : String(err)})))
             .finally(() => setLoading(prev => ({...prev, accom: false})));
     }
 
-     function fetchContentAnalytics() {
+    function fetchContentAnalytics() {
         setLoading(prev => ({...prev, content: true}));
-         setErrors(prev => ({...prev, content: null}));
+        setErrors(prev => ({...prev, content: null}));
         analyticsController.getContentAnalytics(filters)
             .then(data => setContentAnalytics(data))
             .catch(err => setErrors(prev => ({...prev, content: err instanceof Error ? err.message : String(err)})))
             .finally(() => setLoading(prev => ({...prev, content: false})));
     }
 
-     function fetchRatingAnalytics() {
+    function fetchRatingAnalytics() {
         setLoading(prev => ({...prev, ratings: true}));
-         setErrors(prev => ({...prev, ratings: null}));
+        setErrors(prev => ({...prev, ratings: null}));
         analyticsController.getRatingAnalytics(filters)
             .then(data => setRatingAnalytics(data))
             .catch(err => setErrors(prev => ({...prev, ratings: err instanceof Error ? err.message : String(err)})))
             .finally(() => setLoading(prev => ({...prev, ratings: false})));
     }
 
-     function fetchProviderAnalytics() {
+    function fetchProviderAnalytics() {
         setLoading(prev => ({...prev, providers: true}));
-         setErrors(prev => ({...prev, providers: null}));
+        setErrors(prev => ({...prev, providers: null}));
         analyticsController.getProviderAnalytics(filters)
             .then(data => setProviderAnalytics(data))
             .catch(err => setErrors(prev => ({...prev, providers: err instanceof Error ? err.message : String(err)})))
@@ -134,7 +139,7 @@ export default function AnalyticsPage() {
             status: filters.status || undefined,
             reviewableType: filters.reviewableType || undefined,
             reportType: reportType,
-            format: exportForma
+            format: exportFormat
         };
 
         analyticsController.exportAnalytics(exportFilters)
@@ -147,13 +152,13 @@ export default function AnalyticsPage() {
                     a.download = `analytics_${reportType}.${exportFormat}`;
                     document.body.appendChild(a);
                     a.click();
-                    window.URL.revokeObjectURL(url); // Clean up the object URL
-                    a.remove(); // Clean up the temporary anchor element
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
                 } else if (result) {
-                     console.log("Export returned non-blob data (likely JSON):", result);
-                     alert("Export returned JSON data. Check console.");
+                    console.log("Export returned non-blob data (likely JSON):", result);
+                    alert("Export returned JSON data. Check console.");
                 } else {
-                     setErrors(prev => ({...prev, export: "Export returned no data."}));
+                    setErrors(prev => ({...prev, export: "Export returned no data."}));
                 }
             })
             .catch(err => setErrors(prev => ({...prev, export: err instanceof Error ? err.message : String(err)})))
@@ -164,32 +169,22 @@ export default function AnalyticsPage() {
         fetchOverview();
     }, []); 
 
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-start pt-12 pb-12">
-
-
-            <div className="max-w-5xl w-full px-6 ">
-                <h1 className="mb-6 text-display-sm">Analytics Data</h1> {/* Adjusted text size */}
+            <div className="max-w-5xl w-full px-6">
+                <h1 className="mb-6 text-display-sm">Analytics Dashboard</h1>
 
                 {/* Overview Section */}
                 <div className="card mb-8">
-                    <h2 className="mb-4 text-headline-md">Overview</h2> {/* Adjusted text size */}
+                    <h2 className="mb-4 text-headline-md">Overview</h2>
                     <button onClick={fetchOverview} className="btn-text mb-2" disabled={loading['overview']}>
                         {loading['overview'] ? 'Loading...' : 'Refresh'}
                     </button>
 
-                    {errors['overview'] && <p className="text-error text-body-md">Error: {errors['overview']}</p>} {/* Adjusted text size */}
+                    {errors['overview'] && <p className="text-error text-body-md">Error: {errors['overview']}</p>}
 
-                    {overviewData ? ( // Check if data exists before rendering
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-body-md"> {/* Adjusted text size */}
-                            <p>Total Users: <strong>{overviewData.totalUsers}</strong></p>
-                            <p>Total Bookings: <strong>{overviewData.totalBookings}</strong></p>
-                           <p>Trans. Bookings: <strong>{overviewData.totalTransportationBookings}</strong></p>
-                            <p>Acc. Bookings: <strong>{overviewData.totalAccommodationBookings}</strong></p>
-                            <p>Total Revenue: <strong>{overviewData.totalRevenue?.toFixed(2)}</strong></p>
-                            <p>Avg Rating: <strong>{overviewData.averageRating?.toFixed(2) ?? 'N/A'}</strong></p>
-                        </div>
+                    {overviewData ? (
+                        <OverviewStats data={overviewData} />
                     ) : (!loading['overview'] && !errors['overview'] && <p className="text-body-md">No overview data loaded.</p>)}
                 </div>
 
@@ -198,7 +193,7 @@ export default function AnalyticsPage() {
                     <h2 className="mb-4 text-headline-md">Filters</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-title-sm mb-1">Start Date</label> {/* Added labels */}
+                            <label className="block text-title-sm mb-1">Start Date</label>
                             <input
                                 type="date"
                                 name="startDate"
@@ -208,7 +203,7 @@ export default function AnalyticsPage() {
                             />
                         </div>
                         <div>
-                             <label className="block text-title-sm mb-1">End Date</label>
+                            <label className="block text-title-sm mb-1">End Date</label>
                             <input
                                 type="date"
                                 name="endDate"
@@ -230,24 +225,24 @@ export default function AnalyticsPage() {
                                 <option value="month">Month</option>
                             </select>
                         </div>
-                         <div>
+                        <div>
                             <label className="block text-title-sm mb-1">Status (Bookings)</label>
-                             <input
+                            <input
                                 type="text"
                                 name="status"
                                 placeholder="e.g., confirmed"
-                                value={filters.status ?? ''} // Handle potential undefined
+                                value={filters.status ?? ''}
                                 onChange={handleFilterChange}
                                 className="input w-full"
                             />
                         </div>
-                         <div>
-                             <label className="block text-title-sm mb-1">Reviewable Type</label>
+                        <div>
+                            <label className="block text-title-sm mb-1">Reviewable Type</label>
                             <input
                                 type="text"
                                 name="reviewableType"
                                 placeholder="e.g., TransportationListing"
-                                value={filters.reviewableType ?? ''} // Handle potential undefined
+                                value={filters.reviewableType ?? ''}
                                 onChange={handleFilterChange}
                                 className="input w-full"
                             />
@@ -265,99 +260,60 @@ export default function AnalyticsPage() {
                     {errors['users'] && <p className="text-error text-body-md">Error: {errors['users']}</p>}
 
                     {userAnalytics && (
-                        <pre className="text-body-sm bg-light-surface dark:bg-dark-surface p-2 rounded overflow-x-auto"> {/* Added dark mode bg */}
-                            {JSON.stringify(userAnalytics, null, 2)}
-                        </pre>
+                        <UserAnalyticsChart data={userAnalytics} />
                     )}
                 </div>
 
-                {/* Transport Bookings */}
-                 <div className="card mb-8">
-                    <h2 className="mb-4 text-headline-md">Transport Bookings</h2>
-                    <button onClick={fetchTransportBookings} className="btn-text mb-2" disabled={loading['transport']}>
-                         {loading['transport'] ? 'Loading...' : 'Load Transport Data'}
+    
+
+                {/* Content Analytics */}
+                <div className="card mb-8">
+                    <h2 className="mb-4 text-headline-md">Content Analytics</h2>
+                    <button onClick={fetchContentAnalytics} className="btn-text mb-2" disabled={loading['content']}>
+                        {loading['content'] ? 'Loading...' : 'Load Content Data'}
                     </button>
 
-                     {errors['transport'] && <p className="text-error text-body-md">Error: {errors['transport']}</p>}
+                    {errors['content'] && <p className="text-error text-body-md">Error: {errors['content']}</p>}
 
-                     {transportBookings && (
-                        <pre className="text-body-sm bg-light-surface dark:bg-dark-surface p-2 rounded overflow-x-auto">
-                             {JSON.stringify(transportBookings, null, 2)}
-                        </pre>
+                    {contentAnalytics && (
+                        <ContentAnalyticsChart data={contentAnalytics} />
                     )}
                 </div>
 
-                 {/* Accommodation Bookings */}
-                 <div className="card mb-8">
-                     <h2 className="mb-4 text-headline-md">Accommodation Bookings</h2>
-                     <button onClick={fetchAccomBookings} className="btn-text mb-2" disabled={loading['accom']}>
-                         {loading['accom'] ? 'Loading...' : 'Load Accommodation Data'}
-                     </button>
+                {/* Rating Analytics */}
+                <div className="card mb-8">
+                    <h2 className="mb-4 text-headline-md">Rating Analytics</h2>
+                    <button onClick={fetchRatingAnalytics} className="btn-text mb-2" disabled={loading['ratings']}>
+                        {loading['ratings'] ? 'Loading...' : 'Load Rating Data'}
+                    </button>
 
-                     {errors['accom'] && <p className="text-error text-body-md">Error: {errors['accom']}</p>}
+                    {errors['ratings'] && <p className="text-error text-body-md">Error: {errors['ratings']}</p>}
 
-                     {accomBookings && (
-                        <pre className="text-body-sm bg-light-surface dark:bg-dark-surface p-2 rounded overflow-x-auto">
-                             {JSON.stringify(accomBookings, null, 2)}
-                         </pre>
-                     )}
-                 </div>
+                    {ratingAnalytics && (
+                        <RatingAnalyticsChart data={ratingAnalytics} />
+                    )}
+                </div>
 
-                 {/* Content Analytics */}
-                 <div className="card mb-8">
-                     <h2 className="mb-4 text-headline-md">Content Analytics</h2>
-                     <button onClick={fetchContentAnalytics} className="btn-text mb-2" disabled={loading['content']}>
-                         {loading['content'] ? 'Loading...' : 'Load Content Data'}
-                     </button>
+                {/* Provider Analytics */}
+                <div className="card mb-8">
+                    <h2 className="mb-4 text-headline-md">Provider Analytics</h2>
+                    <button onClick={fetchProviderAnalytics} className="btn-text mb-2" disabled={loading['providers']}>
+                        {loading['providers'] ? 'Loading...' : 'Load Provider Data'}
+                    </button>
 
-                     {errors['content'] && <p className="text-error text-body-md">Error: {errors['content']}</p>}
+                    {errors['providers'] && <p className="text-error text-body-md">Error: {errors['providers']}</p>}
 
-                     {contentAnalytics && (
-                        <pre className="text-body-sm bg-light-surface dark:bg-dark-surface p-2 rounded overflow-x-auto">
-                             {JSON.stringify(contentAnalytics, null, 2)}
-                         </pre>
-                     )}
-                 </div>
-
-                 {/* Rating Analytics */}
-                 <div className="card mb-8">
-                     <h2 className="mb-4 text-headline-md">Rating Analytics</h2>
-                     <button onClick={fetchRatingAnalytics} className="btn-text mb-2" disabled={loading['ratings']}>
-                         {loading['ratings'] ? 'Loading...' : 'Load Rating Data'}
-                     </button>
-
-                     {errors['ratings'] && <p className="text-error text-body-md">Error: {errors['ratings']}</p>}
-
-                     {ratingAnalytics && (
-                        <pre className="text-body-sm bg-light-surface dark:bg-dark-surface p-2 rounded overflow-x-auto">
-                             {JSON.stringify(ratingAnalytics, null, 2)}
-                        </pre>
-                     )}
-                 </div>
-
-                  {/* Provider Analytics */}
-                 <div className="card mb-8">
-                     <h2 className="mb-4 text-headline-md">Provider Analytics</h2>
-                     <button onClick={fetchProviderAnalytics} className="btn-text mb-2" disabled={loading['providers']}>
-                         {loading['providers'] ? 'Loading...' : 'Load Provider Data'}
-                     </button>
-
-                     {errors['providers'] && <p className="text-error text-body-md">Error: {errors['providers']}</p>}
-
-                     {providerAnalytics && (
-                        <pre className="text-body-sm bg-light-surface dark:bg-dark-surface p-2 rounded overflow-x-auto">
-                             {JSON.stringify(providerAnalytics, null, 2)}
-                        </pre>
-                     )}
-                 </div>
-
+                    {providerAnalytics && (
+                        <ProviderAnalyticsChart data={providerAnalytics} />
+                    )}
+                </div>
 
                 {/* Export Section */}
                 <div className="card mb-8">
                     <h2 className="mb-4 text-headline-md">Export Data</h2>
                     <div className="flex flex-wrap gap-4 items-end">
                         <div>
-                             <label className="block text-title-sm mb-1">Report Type</label>
+                            <label className="block text-title-sm mb-1">Report Type</label>
                             <select
                                 value={reportType}
                                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setReportType(e.target.value)}
@@ -367,13 +323,13 @@ export default function AnalyticsPage() {
                                 <option value="users">Users</option>
                                 <option value="bookings_transportation">Transport Bookings</option>
                                 <option value="bookings_accommodation">Accommodation Bookings</option>
-                                 <option value="content">Content</option>
-                                 <option value="ratings">Ratings</option>
-                                 <option value="providers">Providers</option>
+                                <option value="content">Content</option>
+                                <option value="ratings">Ratings</option>
+                                <option value="providers">Providers</option>
                             </select>
                         </div>
                         <div>
-                             <label className="block text-title-sm mb-1">Format</label>
+                            <label className="block text-title-sm mb-1">Format</label>
                             <select
                                 value={exportFormat}
                                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setExportFormat(e.target.value as ExportFormat)}

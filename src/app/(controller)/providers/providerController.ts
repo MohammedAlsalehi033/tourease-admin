@@ -9,7 +9,7 @@ export class ProviderController {
     @inject(ProvdersRepository) private adminRepository: ProvdersRepository
   ) {}
 
-  async getPendingTransportationProviders(status: string = 'active'): Promise<TransportationProvider[]> {
+  async getPendingTransportationProviders(status: string = 'pending'): Promise<TransportationProvider[]> {
     console.log(`Controller: Fetching transportation providers with status: ${status}`);
     return await this.adminRepository.getTransportationProvidersByStatus(status);
   }

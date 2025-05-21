@@ -4,51 +4,41 @@ import Link from 'next/link';
 import { container } from '@/app/lib/diContainer';
 import { ProviderController } from '@/app/(controller)/providers/providerController';
 
+const provider = container.resolve(ProviderController);
 
-
-  const provider = container.resolve(ProviderController)
-
-
-
-
-  async function approveTransporationProvider(providerId : string){
-    'use server'
-     const response = await provider.approveTransportationProvider(providerId)
-     return response;
-  }
-
-  async function rejectTransporationProvider(providerId : string){
-    'use server'
-     const response = await provider.rejectTransportationProvider(providerId)
-     return response;
-  }
-
-
-
-async function getTransportationProviders(status = 'pending') {
-   
-
-  const response = await provider.getPendingTransportationProviders()
-  console.log(response)
-
-  
+async function approveTransporationProvider(providerId: string) {
+  'use server'
+  const response = await provider.approveTransportationProvider(providerId)
   return response;
 }
 
-async function getAccommodationProviders(status = 'pending') {
-  const response = await provider.getPendingAccommodationProviders()
-
-  
+async function rejectTransporationProvider(providerId: string) {
+  'use server'
+  const response = await provider.rejectTransportationProvider(providerId)
   return response;
 }
 
-async function TransportationProviderTable({ status, search }) {
-  const providers = await getTransportationProviders(status);
+async function getTransportationProviders(accountStatus = 'pending') {
+  // Pass the accountStatus parameter to the API call
+  const response = await provider.getPendingTransportationProviders(accountStatus)
+  console.log("Fetching transportation providers with accountStatus:", accountStatus)
+  return response;
+}
+
+async function getAccommodationProviders(accountStatus = 'pending') {
+  // Update this function to also use the accountStatus parameter
+  const response = await provider.getPendingAccommodationProviders(accountStatus)
+  console.log("Fetching accommodation providers with accountStatus:", accountStatus)
+  return response;
+}
+
+async function TransportationProviderTable({ accountStatus, search }) {
+  const providers = await getTransportationProviders(accountStatus);
   
   // Filter by search if provided
   const filteredProviders = search 
     ? providers.filter(provider => 
-        provider.user.name.toLowerCase().includes(search.toLowerCase()) ||
+        provider.user.name?.toLowerCase().includes(search.toLowerCase()) ||
         provider.user.email.toLowerCase().includes(search.toLowerCase()) ||
         provider.vehicleType.toLowerCase().includes(search.toLowerCase())
       )
@@ -111,17 +101,16 @@ async function TransportationProviderTable({ status, search }) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex flex-col space-y-2">
-                <form action={approveTransporationProvider.bind(null, provider.providerId)}>
-        <button type="submit" className="btn-primary text-sm py-1">
-          Approve
-        </button>
-      </form>
-
-      <form action={rejectTransporationProvider.bind(null, provider.providerId)}>
-        <button type="submit" className="btn-outlined text-sm py-1 text-error">
-          Reject
-        </button>
-      </form>
+                  <form action={approveTransporationProvider.bind(null, provider.providerId)}>
+                    <button type="submit" className="btn-primary text-sm py-1">
+                      Approve
+                    </button>
+                  </form>
+                  <form action={rejectTransporationProvider.bind(null, provider.providerId)}>
+                    <button type="submit" className="btn-outlined text-sm py-1 text-error">
+                      Reject
+                    </button>
+                  </form>
                   <Link href={`/providers/${provider.providerId}`} className="btn-text text-primary text-center">
                     View Details
                   </Link>
@@ -135,13 +124,13 @@ async function TransportationProviderTable({ status, search }) {
   );
 }
 
-async function AccommodationProviderTable({ status, search }) {
-  const providers = await getAccommodationProviders(status);
+async function AccommodationProviderTable({ accountStatus, search }) {
+  const providers = await getAccommodationProviders(accountStatus);
   
   // Filter by search if provided
   const filteredProviders = search 
     ? providers.filter(provider => 
-        provider.user.name.toLowerCase().includes(search.toLowerCase()) ||
+        provider.user.name?.toLowerCase().includes(search.toLowerCase()) ||
         provider.user.email.toLowerCase().includes(search.toLowerCase()) ||
         provider.accommodationName.toLowerCase().includes(search.toLowerCase()) ||
         provider.address.toLowerCase().includes(search.toLowerCase())
@@ -170,7 +159,7 @@ async function AccommodationProviderTable({ status, search }) {
               <td className="px-6 py-4">
                 <div className="flex items-center">
                   <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <span className="text-gray-500 dark:text-gray-300">{provider.user.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-gray-500 dark:text-gray-300">{provider.user.name?.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="ml-4">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{provider.user.name}</div>
@@ -231,29 +220,28 @@ function TableSkeleton() {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-
       </table>
     </div>
   );
 }
 
-function ProviderFilterSection({ providerType }) {
+function ProviderFilterSection({ providerType, currentaccountStatus, currentSearch }) {
   return (
     <form action="/providers" method="GET">
       <input type="hidden" name="tab" value={providerType} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Status
+          <label htmlFor="accountStatus" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            accountStatus
           </label>
           <select
-            id="status"
-            name="status"
+            id="accountStatus"
+            name="accountStatus"
             className="input w-full"
-            defaultValue="pending"
+            defaultValue={currentaccountStatus || "pending"}
           >
             <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
+            <option value="active">active</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>
@@ -268,6 +256,7 @@ function ProviderFilterSection({ providerType }) {
             name="search"
             placeholder={providerType === "transportation" ? "Search by name, email, or vehicle type" : "Search by name, email, or accommodation name"}
             className="input w-full"
+            defaultValue={currentSearch || ""}
           />
         </div>
         
@@ -286,15 +275,16 @@ function ProviderFilterSection({ providerType }) {
 
 export default function ProviderApprovalPage({ searchParams }) {
   const tab = searchParams?.tab || 'transportation';
-  const status = searchParams?.status || 'pending';
+  const accountStatus = searchParams?.accountStatus ;
   const search = searchParams?.search || '';
-  
+
+  console.log("Tab:", tab);
+  console.log("accountStatus:", accountStatus);
+  console.log("Search:", search);
+    
   return (
     <div className="min-h-screen transition-colors duration-300 flex flex-col">
-
-
-      
-      <div className="px-6 py-8  ml-64">  {/* Adjust margins based on your layout */}
+      <div className="px-6 py-8 ml-64">  {/* Adjust margins based on your layout */}
         <div className="mb-6">
           <h1 className="text-headline-lg font-semibold mb-2">Provider Approval</h1>
           <p className="text-body-md text-gray-600 dark:text-gray-400">
@@ -305,7 +295,7 @@ export default function ProviderApprovalPage({ searchParams }) {
         {/* Tab Navigation */}
         <div className="mb-6 flex border-b border-gray-200 dark:border-gray-700">
           <Link 
-            href="/providers?tab=transportation"
+            href={`/providers?tab=transportation&accountStatus=${accountStatus}&search=${search}`}
             className={`py-2 px-4 border-b-2 font-medium text-sm ${
               tab === 'transportation' 
                 ? 'border-primary text-primary' 
@@ -315,7 +305,7 @@ export default function ProviderApprovalPage({ searchParams }) {
             Transportation Providers
           </Link>
           <Link 
-            href="/providers?tab=accommodation"
+            href={`/providers?tab=accommodation&accountStatus=${accountStatus}&search=${search}`}
             className={`py-2 px-4 border-b-2 font-medium text-sm ${
               tab === 'accommodation' 
                 ? 'border-primary text-primary' 
@@ -332,7 +322,11 @@ export default function ProviderApprovalPage({ searchParams }) {
             <h2 className="text-headline-sm font-semibold">Search & Filter</h2>
           </div>
           <div className="p-4">
-            <ProviderFilterSection providerType={tab} />
+            <ProviderFilterSection 
+              providerType={tab} 
+              currentaccountStatus={accountStatus}  
+              currentSearch={search}
+            />
           </div>
         </div>
         
@@ -341,11 +335,22 @@ export default function ProviderApprovalPage({ searchParams }) {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h2 className="text-headline-sm font-semibold">
               {tab === 'transportation' ? 'Transportation Provider Requests' : 'Accommodation Provider Requests'}
+              {accountStatus && ` - ${accountStatus.charAt(0).toUpperCase() + accountStatus.slice(1)}`}
             </h2>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {status === 'pending' && (
+              {accountStatus === 'pending' && (
                 <span className="font-medium text-warning">
                   Pending requests require review
+                </span>
+              )}
+              {accountStatus === 'approved' && (
+                <span className="font-medium text-success">
+                  Approved providers
+                </span>
+              )}
+              {accountStatus === 'rejected' && (
+                <span className="font-medium text-error">
+                  Rejected providers
                 </span>
               )}
             </div>
@@ -354,9 +359,9 @@ export default function ProviderApprovalPage({ searchParams }) {
           <div className="p-4">
             <Suspense fallback={<TableSkeleton />}>
               {tab === 'transportation' ? (
-                <TransportationProviderTable status={status} search={search} />
+                <TransportationProviderTable accountStatus={accountStatus} search={search} />
               ) : (
-                <AccommodationProviderTable status={status} search={search} />
+                <AccommodationProviderTable accountStatus={accountStatus} search={search} />
               )}
             </Suspense>
             

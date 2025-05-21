@@ -9,9 +9,10 @@ export default function FilterSection() {
   
   const [filters, setFilters] = useState({
     role: searchParams.get('role') || '',
-    status: searchParams.get('status') || '',
+    accountStatus: searchParams.get('accountStatus') || '',
     search: searchParams.get('search') || ''
   });
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +25,7 @@ export default function FilterSection() {
     // Build query params
     const params = new URLSearchParams();
     if (filters.role) params.set('role', filters.role);
-    if (filters.status) params.set('status', filters.status);
+    if (filters.accountStatus) params.set('accountStatus', filters.accountStatus);
     if (filters.search) params.set('search', filters.search);
     
     // Navigate with the filters
@@ -47,22 +48,22 @@ export default function FilterSection() {
           >
             <option value="">All Types</option>
             <option value="traveler">Travelers</option>
-            <option value="provider">Providers</option>
+            <option value="transportationProvider">Transportation Provider</option>
           </select>
         </div>
         
         <div>
-          <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Status
+          <label htmlFor="accountStatus-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            accountStatus
           </label>
           <select
-            id="status-filter"
-            name="status"
+            id="accountStatus-filter"
+            name="accountStatus"
             className="input w-full"
-            value={filters.status}
+            value={filters.accountStatus}
             onChange={handleChange}
           >
-            <option value="">All Statuses</option>
+            <option value="">All accountStatuses</option>
             <option value="active">Active</option>
             <option value="deactivated">Deactivated</option>
           </select>

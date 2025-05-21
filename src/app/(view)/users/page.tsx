@@ -9,7 +9,7 @@ import FilterSection from './FilterSection';
 
 
 
-async function UsersTable({ role, status, search }) {
+async function UsersTable({ role, accountStatus, search }) {
   const userController = container.resolve(UserController);
   const response = await userController.getAllUsers(); 
   
@@ -21,16 +21,15 @@ async function UsersTable({ role, status, search }) {
       name: user.username.split('@')[0] || 'Unknown',
       email: user.email,
       role: user.roles,
-      status: user.accountStatus === 'active' ? 'Active' : 'Deactivated',
+      accountStatus: user.accountStatus === 'active' ? 'Active' : 'Deactivated',
       lastActive: user.updatedAt ? user.updatedAt.split('T')[0] : new Date().toISOString().split('T')[0]
     };
   });
   
- 
   
-  if (status) {
+  if (accountStatus) {
     transformedUsers = transformedUsers.filter(user => 
-      user.status.toLowerCase() === status.toLowerCase()
+      user.accountStatus.toLowerCase() === accountStatus.toLowerCase()
     );
   }
   
@@ -40,6 +39,12 @@ async function UsersTable({ role, status, search }) {
       user.id.toLowerCase().includes(searchLower) ||
       user.name.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower)
+    );
+  }
+
+  if (role) {
+    transformedUsers = transformedUsers.filter(user => 
+      user.role.some(r => r.toLowerCase() === role.toLowerCase())
     );
   }
   
@@ -54,7 +59,7 @@ async function UsersTable({ role, status, search }) {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">accountStatus</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created At</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
@@ -78,9 +83,9 @@ async function UsersTable({ role, status, search }) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  user.accountStatus === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                 }`}>
-                  {user.status}
+                  {user.accountStatus}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.lastActive}</td>
@@ -93,15 +98,7 @@ async function UsersTable({ role, status, search }) {
                     View
                   </Link>
                   
-                  {/* These links would be replaced with client components that have event handlers */}
-                  <Link 
-                    href="#" 
-                    className={`${user.status === 'Active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
-                    data-user-id={user.id}
-                    data-action={user.status === 'Active' ? 'deactivate' : 'activate'}
-                  >
-                    {user.status === 'Active' ? 'Deactivate' : 'Activate'}
-                  </Link>
+                 
                 </div>
               </td>
             </tr>
@@ -124,7 +121,7 @@ function UserTableSkeleton() {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">accountStatus</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Active</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
@@ -165,9 +162,11 @@ function UserTableSkeleton() {
 
 export default function UserManagement({ searchParams }) {
   const role = searchParams?.role || '';
-  const status = searchParams?.status || '';
+  const accountStatus = searchParams?.accountStatus || '';
   const search = searchParams?.search || '';
   
+
+  console.log(accountStatus, role, search);
 
   return (
     <div className="px-6 py-8 ml-64">
@@ -197,7 +196,7 @@ export default function UserManagement({ searchParams }) {
         
         <div className="p-4">
           <Suspense fallback={<UserTableSkeleton />}>
-            <UsersTable role={role} status={status} search={search} />
+            <UsersTable role={role} accountStatus={accountStatus} search={search} />
           </Suspense>
           
           <div className="mt-6 flex items-center justify-between">

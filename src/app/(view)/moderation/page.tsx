@@ -20,19 +20,19 @@ async function deleteCommentAction(questionId: number) {
 }
 
 
-async function ContentTable({ status, search }) {
+async function ContentTable({ accountStatus, search }) {
   const contentController = container.resolve(ContentController);
-  const response = await contentController.getAllQuestions(1, 10, { status, search }); // Adjust page size as needed
+  const response = await contentController.getAllQuestions(1, 10, { accountStatus, search }); // Adjust page size as needed
   
   const transformedContent = response.data.map(item => {
-    const contentStatus = item.status || (item.downvotes > 2 ? 'flagged' : 'active');
+    const contentaccountStatus = item.accountStatus || (item.downvotes > 2 ? 'flagged' : 'active');
     
     return {
       id: item.id,
       title: item.title || 'Untitled Question',
       description: item.description || 'No description provided',
       contentType: 'question', // Assuming questions only for now
-      status: contentStatus,
+      accountStatus: contentaccountStatus,
       flagCount: item.downvotes || 0,
       createdAt: item.createdAt.split('T')[0],
       updatedAt: item.updatedAt.split('T')[0],
@@ -68,7 +68,7 @@ async function ContentTable({ status, search }) {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Content</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Votes</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">accountStatus</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
@@ -116,12 +116,12 @@ async function ContentTable({ status, search }) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  item.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
-                  item.status === 'flagged' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                  item.accountStatus === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                  item.accountStatus === 'flagged' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
                   'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                 }`}>
-                  {item.status === 'active' ? 'Active' : 
-                   item.status === 'flagged' ? 'Flagged' : 'Blocked'}
+                  {item.accountStatus === 'active' ? 'Active' : 
+                   item.accountStatus === 'flagged' ? 'Flagged' : 'Blocked'}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.createdAt}</td>
@@ -134,7 +134,7 @@ async function ContentTable({ status, search }) {
                     View
                   </Link>
                   
-                  {item.status !== 'blocked' ? (
+                  {item.accountStatus !== 'blocked' ? (
                     <form action={deleteCommentAction.bind(null, item.id,)}>
                       <button
                         className="text-red-600 hover:text-red-900"
@@ -173,7 +173,7 @@ function ContentTableSkeleton() {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Content</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Votes</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">accountStatus</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
@@ -220,16 +220,16 @@ function ContentFilterSection() {
     <form action="/moderation" method="GET">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Status
+          <label htmlFor="accountStatus" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            accountStatus
           </label>
           <select
-            id="status"
-            name="status"
+            id="accountStatus"
+            name="accountStatus"
             className="input w-full"
             defaultValue=""
           >
-            <option value="">All Statuses</option>
+            <option value="">All accountStatuses</option>
             <option value="active">Active</option>
             <option value="flagged">Flagged</option>
             <option value="blocked">Blocked</option>
@@ -263,7 +263,7 @@ function ContentFilterSection() {
 }
 
 export default function ContentModeration({ searchParams }) {
-  const status = searchParams?.status || '';
+  const accountStatus = searchParams?.accountStatus || '';
   const search = searchParams?.search || '';
   
   return (
@@ -288,13 +288,13 @@ export default function ContentModeration({ searchParams }) {
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-headline-sm font-semibold">Questions</h2>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {status === 'flagged' && <span className="font-medium text-red-500">Flagged content requires review</span>}
+            {accountStatus === 'flagged' && <span className="font-medium text-red-500">Flagged content requires review</span>}
           </div>
         </div>
         
         <div className="p-4">
           <Suspense fallback={<ContentTableSkeleton />}>
-            <ContentTable status={status} search={search} />
+            <ContentTable accountStatus={accountStatus} search={search} />
           </Suspense>
           
           <div className="mt-6 flex items-center justify-between">

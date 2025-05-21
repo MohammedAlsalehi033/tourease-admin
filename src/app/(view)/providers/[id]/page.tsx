@@ -12,7 +12,6 @@ export default function TransportationProviderDetails() {
     const { id } = params
     
     
-      // Make sure container is properly initialized
       const providerController = container.resolve(ProviderController);
     
       useEffect(() => {
@@ -42,20 +41,29 @@ export default function TransportationProviderDetails() {
       year: 'numeric'
     }).format(date);
   };
-  const handleAccept = () => {
-    console.log("Provider accepted");
-    // Here you would make an API call to update the provider status
-    alert("Provider has been accepted!");
-  };
-  const handleReject = () => {
-    if (reviewMessage.trim() === '') {
-      alert("Please provide a reason for rejection");
-      return;
+  const handleAccept = async () => {
+    try {
+        await providerController.approveTransportationProvider(id);
+        alert("Provider approved successfully. You can use the previous screen for complete functionality.");
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error approving provider:', error);
+        alert("Failed to approve provider");
     }
-    console.log("Provider rejected with message:", reviewMessage);
-    // Here you would make an API call to update the provider status and send the message
-    alert("Provider has been rejected and notified!");
-  };
+};
+
+const handleReject = async () => {
+    try {
+        await providerController.rejectTransportationProvider(id);
+        alert("Provider rejected successfully. You can use the previous screen for complete functionality.");
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error rejecting provider:', error);
+        alert("Failed to reject provider");
+    }
+};
   const openImageViewer = (url) => {
     setSelectedImageUrl(url);
     setImageViewerOpen(true);

@@ -92,4 +92,32 @@ export class UserRepository {
             throw error;
         }
     }
+
+
+    async unblockUser(id: string): Promise<{ success: boolean; message?: string; data?: User }> {
+        try {
+            const response = await fetch(`${this.baseApiUrl}/users/${id}/block`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                 const errorData = await response.text();
+                throw new Error(`Failed to block user: ${response.statusText} (${response.status}) - ${errorData}`);
+            }
+
+            const result = await response.json();
+
+             if (!result.success) {
+                  throw new Error(`API Error blocking user: ${result.message || 'Unknown error'}`);
+             }
+
+            return result;
+        } catch (error) {
+            console.error('Error blocking user:', error);
+            throw error;
+        }
+    }
 }
