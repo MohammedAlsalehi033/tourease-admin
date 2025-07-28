@@ -20,10 +20,10 @@ const AdminSidebar = () => {
 
   return (
     <div>
-      <ThemeToggler />
       
       {/* Mobile Sidebar Toggle */}
       <div className="lg:hidden fixed top-0 left-0 z-20 p-4">
+
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="text-body-md focus:outline-none"
@@ -40,6 +40,7 @@ const AdminSidebar = () => {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 transition-transform duration-300 ease-in-out`}
       >
+        
         <div className="flex items-center justify-center h-16 border-b border-primary-light">
           <p className="text-title-lg font-bold">Admin Portal</p>
         </div>
@@ -131,6 +132,9 @@ const AdminSidebar = () => {
                 <Cog6ToothIcon className="mr-3 h-6 w-6" />
                 System Configuration
               </Link>
+            </div>
+            <div className="px-4 mb-4 flex justify-center">
+              <ThemeToggler />
             </div>
           </div>
         </nav>

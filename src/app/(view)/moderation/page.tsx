@@ -267,7 +267,7 @@ export default function ContentModeration({ searchParams }) {
   const search = searchParams?.search || '';
   
   return (
-    <div className="px-6 py-8 ml-64">
+    <div className="px-6 py-8 ">
       <div className="mb-6">
         <h1 className="text-headline-lg font-semibold mb-2">Content Moderation</h1>
         <p className="text-body-md text-gray-600 dark:text-gray-400">

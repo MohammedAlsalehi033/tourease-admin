@@ -1,4 +1,4 @@
-// app/admin/provider-approval/page.tsx
+import "reflect-metadata"
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { container } from '@/app/lib/diContainer';
@@ -284,7 +284,7 @@ export default function ProviderApprovalPage({ searchParams }) {
     
   return (
     <div className="min-h-screen transition-colors duration-300 flex flex-col">
-      <div className="px-6 py-8 ml-64">  {/* Adjust margins based on your layout */}
+      <div className="px-6 py-8">  {/* Adjust margins based on your layout */}
         <div className="mb-6">
           <h1 className="text-headline-lg font-semibold mb-2">Provider Approval</h1>
           <p className="text-body-md text-gray-600 dark:text-gray-400">

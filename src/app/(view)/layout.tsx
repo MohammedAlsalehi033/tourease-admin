@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} p-8 lg:ml-72 ml-0`}>
       <ThemeProvider attribute="class">
         <MySideBar />
       {children}

@@ -1,4 +1,5 @@
 import { injectable } from 'tsyringe';
+import { getAdminApiUrl } from '../../lib/config';
 import {
     AnalyticsOverviewData,
     UserAnalyticsData,
@@ -12,9 +13,9 @@ import {
 
 @injectable()
 export class AnalyticsRepository {
-    private readonly apiBaseUrl = 'http://localhost:3000/api/admin/'; // Ensure this matches your backend analytics route base
+    private readonly apiBaseUrl = getAdminApiUrl('/');
 
-    private buildQueryString(params?: Record<string, string | number | undefined>): string {
+    private buildQueryString(params?: any): string {
         if (!params) return '';
         const query = Object.entries(params)
             .filter(([, value]) => value !== undefined && value !== null && value !== '')

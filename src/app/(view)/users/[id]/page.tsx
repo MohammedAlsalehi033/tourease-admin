@@ -139,9 +139,9 @@ const UserProfilePage = () => {
      );
 
     return (
-        <div className="min-h-screen transition-colors duration-300 flex flex-col items-center justify-start pt-12 bg-light-background dark:bg-dark-background text-light-onSurface dark:text-dark-onSurface">
+        <div className="min-h-screen transition-colors duration-300 flex flex-col items-center justify-start  bg-light-background dark:bg-dark-background text-light-onSurface dark:text-dark-onSurface">
 
-            <div className="max-w-4xl w-full px-4 md:px-6 mt-16 space-y-8 mb-12">
+            <div className="max-w-4xl w-full px-4 md:px-6  space-y-8 mb-12">
                 <h1 className="text-headline-md font-semibold mb-6 text-center">User Profile</h1>
 
                 {/* User Details Card */}

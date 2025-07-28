@@ -1,5 +1,51 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment Configuration
+
+This project supports multiple environments for API endpoints. You can easily switch between development and production environments.
+
+### Setup Environment
+
+1. Copy the example environment file:
+```bash
+cp env.example .env.local
+```
+
+2. Configure your environment in `.env.local`:
+```bash
+# For development (localhost:3000)
+NEXT_PUBLIC_ENV=development
+
+# For production (13.201.19.41:3003)
+NEXT_PUBLIC_ENV=production
+```
+
+### Quick Environment Switching
+
+Use npm scripts for quick environment switching:
+
+```bash
+# Switch to development environment
+npm run env:dev
+
+# Switch to production environment
+npm run env:prod
+```
+
+Or use the script directly:
+```bash
+# Switch to development environment
+node scripts/switch-env.js development
+
+# Switch to production environment
+node scripts/switch-env.js production
+```
+
+### Environment URLs
+
+- **Development**: `http://localhost:3000/api`
+- **Production**: `http://13.201.19.41:3003/api`
+
 ## Getting Started
 
 First, run the development server:

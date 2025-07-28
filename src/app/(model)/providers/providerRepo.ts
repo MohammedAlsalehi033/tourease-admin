@@ -1,10 +1,11 @@
 import { injectable } from 'tsyringe';
+import { getApiUrl } from '../../lib/config';
 
 import { AccommodationProvider,TransportationProvider } from './providersModel';
 
 @injectable()
 export class ProvdersRepository {
-  private readonly apiBaseUrl = 'http://localhost:3000/api/';
+  private readonly apiBaseUrl = getApiUrl('/');
 
   async getTransportationProvidersByStatus(status: string = 'pending'): Promise<TransportationProvider[]> {
     try {

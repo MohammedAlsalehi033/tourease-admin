@@ -75,7 +75,7 @@ const Page = async ({ params }: PageProps) => {
 
   return (
     <div className="min-h-screen transition-colors duration-300 flex flex-col items-center justify-start pt-10 pb-10 bg-light-background dark:bg-dark-background text-light-on-surface dark:text-dark-on-surface">
-      <div className="max-w-3xl w-full px-4 sm:px-6">
+      <div className="w-full px-4 sm:px-6">
         <h1 className="text-headline-lg font-semibold mb-8 text-center sm:text-left text-primary dark:text-primary-light">
           Content Moderation
         </h1>
@@ -97,7 +97,9 @@ const Page = async ({ params }: PageProps) => {
           {comments.map((comment) => (
             <div key={comment.id} className="card p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
               <div className="flex items-center mb-4">
-                <FaUserCircle className="w-9 h-9 mr-3 text-light-on-surface-variant dark:text-dark-on-surface-variant" />
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-2 flex items-center justify-center">
+                      <span className="text-gray-500 dark:text-gray-300">{comment.user?.username.charAt(0).toUpperCase()}</span>
+                    </div>
                 <div className="flex-grow">
                   <p className="text-title-md font-medium leading-tight">{comment.user?.username || 'Anonymous'}</p>
                   <p className="text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant leading-tight">

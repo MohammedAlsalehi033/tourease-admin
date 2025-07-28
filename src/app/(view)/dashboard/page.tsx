@@ -346,7 +346,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8 ml-72">
+    <div className="">
       <h1 className="text-3xl font-bold">Welcome, {user.username}!</h1>
       <p>This is your protected dashboard.</p>
     </div>

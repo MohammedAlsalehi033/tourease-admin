@@ -1,10 +1,11 @@
 // src/app/(model)/content/contentRepo.ts
 import { injectable } from 'tsyringe';
+import { getApiUrl } from '../../lib/config';
 import { ContentResponse, ContentItem, ContentFilter, BlockContentResponse } from './contentModel';
 
 @injectable()
 export class ContentRepository {
-  private readonly apiBaseUrl = 'http://localhost:3000/api/questions';
+  private readonly apiBaseUrl = getApiUrl('/questions');
 
   async getAllContent(
     page: number = 1,
@@ -65,7 +66,7 @@ export class ContentRepository {
 
   async getContentById(id: number): Promise<ContentItem | null> {
     try {
-      const response = await fetch(`http://localhost:3000/api/commments/?id=${id}`);
+      const response = await fetch(`${getApiUrl('/commments')}/?id=${id}`);
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -142,7 +143,7 @@ export class ContentRepository {
     try {
 
       //http://localhost:3000/api/comments/5
-      const response = await fetch(`http://localhost:3000/api/comments/${commentID}`, {
+      const response = await fetch(`${getApiUrl('/comments')}/${commentID}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -1,10 +1,11 @@
 // src/repositories/productRepository.ts
 import { injectable } from 'tsyringe';
+import { getApiUrl } from '../../lib/config';
 import { PaginatedUsersResponse, User, UserFilter } from './userModel';
 
 @injectable()
 export class UserRepository {
-    private readonly baseApiUrl = 'http://localhost:3000/api';
+    private readonly baseApiUrl = getApiUrl();
 
     async getUserById(id: string): Promise<User | null> {
         try {

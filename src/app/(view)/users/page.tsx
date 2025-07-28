@@ -50,7 +50,6 @@ async function UsersTable({ role, accountStatus, search }) {
   
   // Render the table with filtered data
   return (
-    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
@@ -106,8 +105,6 @@ async function UsersTable({ role, accountStatus, search }) {
         </tbody>
       </table>
     </div>
- 
-    </table>
   );
 }
 
@@ -169,7 +166,7 @@ export default function UserManagement({ searchParams }) {
   console.log(accountStatus, role, search);
 
   return (
-    <div className="px-6 py-8 ml-64">
+    <div className="px-6 py-8">
       <div className="mb-6">
         <h1 className="text-headline-lg font-semibold mb-2">User Management</h1>
         <p className="text-body-md text-gray-600 dark:text-gray-400">
