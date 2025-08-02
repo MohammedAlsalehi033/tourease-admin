@@ -1,146 +1,134 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  HomeIcon, UsersIcon, Cog6ToothIcon,
-  ChartBarIcon, ShieldCheckIcon, BuildingStorefrontIcon,
-  FlagIcon, DocumentTextIcon
+import {
+    HomeIcon, UsersIcon, Cog6ToothIcon,
+    ChartBarIcon, ShieldCheckIcon, BuildingStorefrontIcon,
+    FlagIcon, DocumentTextIcon, Bars3Icon
 } from '@heroicons/react/24/outline';
 import ThemeToggler from './themeToggler';
 
+// Helper component for animated links
+const NavLink = ({ href, icon: Icon, text, isActive, animationDelay = 0 }) => (
+    <Link
+        href={href}
+        style={{ animationDelay: `${animationDelay}ms` }}
+        title={text}
+        className={`btn-text group flex items-center w-full transform transition-all duration-300 ${isActive ? 'bg-primary-light/90 text-white shadow-lg' : 'text-white hover:bg-primary-light/70 hover:translate-x-2'} animate-fade-in-up`}
+    >
+        {Icon && <Icon className="mr-3 h-6 w-6 transition-transform duration-300 group-hover:scale-110" />}
+        <span className="truncate">{text}</span>
+    </Link>
+);
+
 const AdminSidebar = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [textIndex, setTextIndex] = useState(0);
     const pathname = usePathname();
-    
+
+    const slogans = [
+        "Manage with Precision.",
+        "Insights at a Glance.",
+        "Control Your Platform."
+    ];
+    const cyclingText = ["Admin Portal", ...slogans];
+
+    // Effect for cycling through slogans
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            
+        }, 3000); // Change text every 3 seconds
+
+        return () => clearInterval(intervalId); // Cleanup on unmount
+    }, [cyclingText.length]);
+
+    // Close sidebar on route change on mobile
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [pathname]);
+
     const isActive = (path) => {
-      return pathname === path;
+        return pathname === path;
     };
 
-  return (
-    <div>
-      
-      {/* Mobile Sidebar Toggle */}
-      <div className="lg:hidden fixed top-0 left-0 z-20 p-4">
+    const navSections = [
+        {
+            title: 'Main',
+            links: [
+                { href: '/dashboard', text: 'Dashboard', icon: HomeIcon },
+                { href: '/users', text: 'User Management', icon: UsersIcon },
+                { href: '/moderation', text: 'Content Moderation', icon: FlagIcon },
+                { href: '/providers', text: 'Provider Approvals', icon: BuildingStorefrontIcon },
+            ]
+        },
+        {
+            title: 'Additional',
+            links: [
+                { href: '/analytics', text: 'Analytics & Reports', icon: ChartBarIcon },
+                { href: '/disputes', text: 'Dispute Management', icon: ShieldCheckIcon },
+                { href: '/policies', text: 'Platform Policies', icon: DocumentTextIcon },
+                { href: '/settings', text: 'System Configuration', icon: Cog6ToothIcon },
+            ]
+        }
+    ];
 
-        <button 
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="text-body-md focus:outline-none"
-        >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
+    return (
+        <div>
+            <div className="fixed top-4 right-4 z-30">
+                <ThemeToggler />
+            </div>
 
-      {/* Sidebar */}
-      <aside 
-        className={`fixed inset-y-0 left-0 z-10 w-64 bg-primary text-white transform ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 transition-transform duration-300 ease-in-out`}
-      >
-        
-        <div className="flex items-center justify-center h-16 border-b border-primary-light">
-          <p className="text-title-lg font-bold">Admin Portal</p>
+            {/* Mobile Sidebar Toggle */}
+            <div className="lg:hidden fixed top-4 left-4 z-30">
+                <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="p-2 rounded-md text-gray-700 dark:text-gray-200 bg-white/50 dark:bg-black/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                    <Bars3Icon className="h-6 w-6" />
+                </button>
+            </div>
+
+            {/* Sidebar */}
+            <aside
+                className={`fixed inset-y-0 left-0 z-20 w-64 bg-primary text-white transform transition-transform duration-500 ease-in-out ${sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} lg:translate-x-0`}
+            >
+                <div className="flex items-center justify-center h-20 border-b border-white/20">
+                    {/* Animated Text */}
+                    <p key={textIndex} className="text-2xl font-bold tracking-wider text-center px-2 animate-fade-in-up">
+                        {cyclingText[textIndex]}
+                    </p>
+                </div>
+                <nav className="mt-6 px-4 space-y-6">
+                    {navSections.map((section, sectionIndex) => (
+                        <div key={section.title}>
+                            <p className="px-3 text-sm font-semibold text-white/60 uppercase tracking-wider animate-fade-in-up" style={{ animationDelay: `${sectionIndex * 150}ms` }}>
+                                {section.title}
+                            </p>
+                            <div className="mt-3 space-y-1">
+                                {section.links.map((link, linkIndex) => {
+                                    const totalPreviousLinks = navSections.slice(0, sectionIndex).reduce((acc, sec) => acc + sec.links.length, 0);
+                                    const animationDelay = (totalPreviousLinks + linkIndex) * 50 + 150;
+
+                                    return (
+                                        <NavLink
+                                            key={link.text}
+                                            href={link.href}
+                                            text={link.text}
+                                            icon={link.icon}
+                                            isActive={isActive(link.href)}
+                                            animationDelay={animationDelay}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </nav>
+            </aside>
         </div>
-        <nav className="mt-8">
-          <div className="px-4 mb-4">
-            <p className="text-title-sm font-semibold text-primary-light uppercase tracking-wider">Main</p>
-            <div className="mt-3 space-y-1">
-              <Link href="/dashboard" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/dashboard') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <HomeIcon className="mr-3 h-6 w-6" />
-                Dashboard
-              </Link>
-              
-              {/* User Account Management */}
-              <Link href="/users" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/users') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <UsersIcon className="mr-3 h-6 w-6" />
-                User Management
-              </Link>
-              
-              {/* Content Moderation */}
-              <Link href="/moderation" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/moderation') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <FlagIcon className="mr-3 h-6 w-6" />
-                Content Moderation
-              </Link>
-              
-              {/* Provider Approvals */}
-              <Link href="/providers" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/providers') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <BuildingStorefrontIcon className="mr-3 h-6 w-6" />
-                Provider Approvals
-              </Link>
-            </div>
-          </div>
-          
-          
-          <div className="px-4 mb-4">
-            <p className="text-title-sm font-semibold text-primary-light uppercase tracking-wider">Additional</p>
-            <div className="mt-3 space-y-1">
-              {/* Analytics & Reporting */}
-              <Link href="/analytics" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/analytics') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <ChartBarIcon className="mr-3 h-6 w-6" />
-                Analytics & Reports
-              </Link>
-              
-              {/* Dispute Management */}
-              <Link href="/disputes" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/disputes') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <ShieldCheckIcon className="mr-3 h-6 w-6" />
-                Dispute Management
-              </Link>
-
-              {/* Policy Management */}
-              <Link href="/policies" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/policies') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <DocumentTextIcon className="mr-3 h-6 w-6" />
-                Platform Policies
-              </Link>
-              
-              {/* System Configuration */}
-              <Link href="/settings" 
-                className={`group flex items-center px-2 py-2 text-body-md font-medium rounded-md ${
-                  isActive('/settings') ? 'bg-primary-light text-white' : 'text-white hover:bg-primary-light'
-                }`}
-              >
-                <Cog6ToothIcon className="mr-3 h-6 w-6" />
-                System Configuration
-              </Link>
-            </div>
-            <div className="px-4 mb-4 flex justify-center">
-              <ThemeToggler />
-            </div>
-          </div>
-        </nav>
-      </aside>
-    </div>
-  )
+    )
 }
 
-export default AdminSidebar
+export default AdminSidebar;

@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
 
     return (
         <div className="min-h-screen flex flex-col items-center w-full justify-start pt-12 pb-12">
-            <div className="lg:max-w-5xl w-full px-6">
+            <div className="w-full px-6">
                 <h1 className="mb-6 text-display-sm">Analytics Dashboard</h1>
 
                 {/* Overview Section */}

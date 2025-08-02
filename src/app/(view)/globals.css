@@ -1,141 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+================================================================================
+ BASE LAYER & THEME VARIABLES (:root)
+================================================================================
+ This layer defines the core design tokens for the application, directly
+ translating the theme from the Flutter `AppThemes.dart` file.
+ - Colors are mapped from the Flutter `ColorScheme`.
+ - Sizing variables for border radius are defined here.
+ - Light and Dark mode variables are set up for theme switching.
+================================================================================
+*/
 @layer base {
   :root {
-    /* Light mode variables (blue theme) */
-    --primary: 33, 150, 243;          /* #2196F3 - Material Blue */
-    --primary-light: 66, 165, 245;    /* #42A5F5 - Blue 400 */
-    --primary-dark: 13, 71, 161;      /* #0D47A1 - Darker for hover */
+    /* Font family variables */
+    --font-display: 'Poppins', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Sizing variables from Flutter Theme */
+    --radius-standard: 12px; /* Flutter: _borderRadius = 12.0 */
+    --radius-button: 8px;   /* Flutter: _buttonBorderRadius = 8.0 */
+
+    /* Light mode variables (blue theme) - Mapped from Flutter's light ColorScheme */
+    --primary: 33, 150, 243;      /* #2196F3 - Material Blue (_primaryColor) */
+    --secondary: 66, 165, 245;    /* #42A5F5 - Blue 400 (_secondaryColor) */
+    --primary-dark: 13, 71, 161;  /* #0D47A1 - Darker for hover (not in Flutter theme, but good for web) */
     
-    --error: 229, 57, 53;             /* #E53935 - Red 600 */
-    --success: 67, 160, 71;           /* #43A047 - Green 600 */
-    --warning: 255, 160, 0;           /* #FFA000 - Amber 700 */
-    --info: 2, 136, 209;              /* #0288D1 - Light Blue 700 */
+    --error: 229, 57, 53;         /* #E53935 - Red 600 (_errorColor) */
+    --success: 67, 160, 71;       /* #43A047 - Green 600 (_successColor) */
+    --warning: 255, 160, 0;       /* #FFA000 - Amber 700 (_warningColor) */
+    --info: 2, 136, 209;          /* #0288D1 - Light Blue 700 (_infoColor) */
     
-    --background: 245, 245, 245;      /* #F5F5F5 - Slightly off-white */
-    --surface: 255, 255, 255;         /* #FFFFFF - White */
-    --text: 0, 0, 0, 0.87;            /* Black87 - Standard Material text */
-    
-    /* Typography styling */
-    font-family: system-ui, -apple-system, sans-serif;
+    --background: 245, 245, 245;  /* #F5F5F5 - Flutter: background */
+    --surface: 255, 255, 255;     /* #FFFFFF - Flutter: surface */
+    --text: 0, 0, 0, 0.87;        /* Black87 - Flutter: onSurface / onBackground */
   }
 
   .dark {
-    /* Dark mode variables (same primary colors but dark backgrounds) */
-    --primary: 33, 150, 243;          /* Same blue for consistency */
-    --primary-light: 66, 165, 245;    /* Same blue light */
-    --primary-dark: 13, 71, 161;      /* Same blue dark */
+    /* Dark mode variables - Mapped from Flutter's dark ColorScheme */
+    --primary: 33, 150, 243;      /* Same blue for consistency */
+    --secondary: 66, 165, 245;    /* Same blue light */
+    --primary-dark: 13, 71, 161;  /* Same blue dark */
     
-    --background: 18, 18, 18;         /* #121212 - Standard Material dark background */
-    --surface: 32, 32, 32;            /* #202020 - Slightly lighter than background */
-    --text: 255, 255, 255;            /* White text for dark mode */
+    --background: 18, 18, 18;     /* #121212 - Flutter: background */
+    --surface: 32, 32, 32;        /* #202020 - Flutter: surface */
+    --text: 255, 255, 255;        /* White - Flutter: onSurface / onBackground */
   }
 
   body {
-    @apply bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text;
+    background-color: rgb(var(--background));
+    color: rgb(var(--text));
     @apply transition-colors duration-200;
+    font-family: var(--font-body);
+  }
+
+  /* Typography mapping from Flutter's TextTheme */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 
   h1 {
-    @apply text-display-sm font-bold text-primary dark:text-primary;
+    /* Matches displaySmall: fontSize: 24, fontWeight: bold */
+    @apply text-2xl font-bold;
+    color: rgb(var(--primary));
   }
 
   h2 {
-    @apply text-headline-md font-semibold text-light-text dark:text-dark-text;
+    /* Matches headlineMedium: fontSize: 20, fontWeight: w600 */
+    @apply text-xl font-semibold;
+    color: rgb(var(--text));
   }
 
   h3 {
-    @apply text-headline-sm font-semibold text-light-text dark:text-dark-text;
-  }
-
-  p {
-    @apply text-body-md font-normal text-light-text dark:text-dark-text;
+    /* Matches headlineSmall: fontSize: 18, fontWeight: w600 */
+    @apply text-lg font-semibold;
+     color: rgb(var(--text));
   }
 }
 
+
+/*
+================================================================================
+ COMPONENTS LAYER
+================================================================================
+ This layer defines reusable component classes. These classes are designed
+ to match the styled widgets in the Flutter theme (Buttons, Cards, Inputs, etc.).
+ They use the variables defined in the :root for consistency.
+================================================================================
+*/
 @layer components {
+
+  /* Tabs Component */
+  .tabs {
+    @apply flex overflow-x-auto;
+    background-color: rgb(var(--surface));
+  }
+  .tabs > *:not(:last-child) {
+    @apply border-r;
+    border-color: rgba(var(--text), 0.1);
+  }
+   .tabs > *:not(:last-child):hover {
+    border-color: rgba(var(--text), 0.2);
+  }
+
+  .tab {
+    /* Matches bodyLarge: fontSize: 16, and titleLarge: fontWeight: w600 */
+    @apply px-4 py-2 text-base font-semibold transition-colors duration-200;
+    color: rgb(var(--text));
+    background-color: rgb(var(--surface));
+  }
+  .tab:hover {
+     background-color: rgba(var(--surface), 0.8);
+  }
+
+  /* Base Button Style with Animation */
   .btn {
-    @apply px-6 py-3 rounded-button transition-all duration-200;
+    /* Matches _baseButtonStyle: padding & button border radius */
+    @apply px-6 py-3 transition-all duration-200;
+    border-radius: var(--radius-button);
+  }
+  .btn:active {
+    /* Added press animation */
+    @apply transform scale-95;
   }
   
+  /* Primary Button (ElevatedButton) */
   .btn-primary {
-    @apply btn bg-primary text-white hover:bg-primary-dark active:opacity-80 
-    flex items-center justify-center
-    
-           disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply btn text-white active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed;
+    background-color: rgb(var(--primary));
+  }
+  .btn-primary:hover {
+     @apply shadow-lg;
+     background-color: rgb(var(--primary-dark));
   }
   
+  /* Outlined Button */
   .btn-outlined {
-    @apply btn bg-transparent border-2 border-primary text-primary 
-           flex items-center justify-center
-           hover:bg-primary/10 active:opacity-80 
-           disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply btn bg-transparent border-2 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed;
+    border-color: rgb(var(--primary));
+    color: rgb(var(--primary));
+  }
+  .btn-outlined:hover {
+    background-color: rgba(var(--primary), 0.1);
   }
   
+  /* Text Button */
   .btn-text {
-    @apply btn bg-transparent text-primary hover:bg-primary/10 active:opacity-80 
-           disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply btn bg-transparent active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed;
+    color: rgb(var(--primary));
+  }
+  .btn-text:hover {
+    background-color: rgba(var(--primary), 0.1);
   }
   
+  /* Card Component with Animation */
   .card {
-    @apply bg-light-surface dark:bg-dark-surface rounded-standard p-4 m-2
-           shadow-card-light dark:shadow-card-dark transition-shadow duration-200;
+    /* Matches CardTheme: elevation, margin, shape, color */
+    @apply p-4 m-2 shadow-md dark:shadow-lg transition-all duration-300;
+    background-color: rgb(var(--surface));
+    border-radius: var(--radius-standard);
+  }
+  .card:hover {
+    /* Added lift animation on hover */
+    @apply shadow-xl transform -translate-y-1;
+  }
+
+  /* Chat Message (Styled like a card) */
+  .chat-message {
+    @apply p-4 m-2 w-1/2 shadow-md dark:shadow-lg transition-shadow duration-200;
+    border-radius: var(--radius-standard);
   }
   
+  /* Input Field with Animation */
   .input {
-    @apply bg-light-surface dark:bg-dark-surface/50 
-           border border-primary/20 dark:border-white/20
-           rounded-standard px-4 py-4
-           focus:border-primary focus:border-2 focus:outline-none
-           text-body-md text-light-text dark:text-dark-text;
+    /* Matches InputDecorationTheme: fill, border, padding */
+    @apply border focus:border-2 focus:outline-none px-4 py-4 text-base transition-all duration-300;
+    background-color: rgba(var(--surface), 0.8);
+    border-color: rgba(var(--primary), 0.2);
+    color: rgb(var(--text));
+    border-radius: var(--radius-standard);
+  }
+  .dark .input {
+    background-color: rgba(var(--surface), 0.5);
+  }
+  .input:focus {
+    border-color: rgb(var(--primary));
+    /* Added glow effect on focus */
+    box-shadow: 0 0 0 3px rgba(var(--primary), 0.2);
   }
   
-  /* Divider matching Flutter's divider */
+  /* Divider */
   .divider {
-    @apply h-px bg-light-text/10 dark:bg-dark-text/10 my-4;
+    /* Matches DividerTheme */
+    @apply h-px my-4;
+    background-color: rgba(var(--text), 0.1);
   }
   
-  /* Checkbox styling similar to Flutter */
+  /* Checkbox */
   .checkbox {
-    @apply h-5 w-5 rounded accent-primary;
+    /* Matches CheckboxTheme */
+    @apply h-5 w-5;
+    accent-color: rgb(var(--primary));
+    border-radius: 4px;
   }
   
-  /* Switch styling */
+  /* Switch */
   .switch {
-    @apply h-6 w-11 rounded-full bg-gray-300 dark:bg-gray-600 
-           peer-checked:bg-primary/50 after:content-[''] after:absolute 
-           after:top-0.5 after:left-0.5 after:bg-white after:rounded-full 
-           after:h-5 after:w-5 after:transition-all 
-           peer-checked:after:translate-x-5 peer-checked:after:bg-primary;
+    /* Matches SwitchTheme */
+    @apply relative inline-block h-6 w-11;
   }
-  
-  /* App bar styling */
+  .switch input { @apply opacity-0 w-0 h-0; }
+  .switch .slider {
+    @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-300 dark:bg-gray-600 transition-all rounded-full;
+  }
+  .switch .slider:before {
+    @apply absolute content-[''] h-5 w-5 left-0.5 bottom-0.5 bg-white transition-all rounded-full;
+  }
+  .switch input:checked + .slider {
+    background-color: rgba(var(--primary), 0.5);
+  }
+  .switch input:checked + .slider:before {
+    background-color: rgb(var(--primary));
+    transform: translateX(20px);
+  }
+
+  /* App Bar */
   .app-bar {
-    @apply bg-light-surface dark:bg-dark-surface 
-           border-b border-light-text/10 dark:border-dark-text/10
-           py-4 px-6 flex items-center;
+    /* Matches AppBarTheme */
+    @apply border-b py-4 px-6 flex items-center;
+    background-color: rgb(var(--surface));
+    border-color: rgba(var(--text), 0.1);
   }
   
-  /* Bottom sheet styling */
+  /* Bottom Sheet */
   .bottom-sheet {
-    @apply bg-light-surface dark:bg-dark-surface 
-           rounded-t-standard p-6 shadow-lg;
+    /* Matches BottomSheetTheme */
+    @apply p-6 shadow-lg;
+    background-color: rgb(var(--surface));
+    border-top-left-radius: var(--radius-standard);
+    border-top-right-radius: var(--radius-standard);
+  }
+
+  /* Badge Components */
+  .badge {
+    @apply inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success {
+    background-color: rgba(var(--success), 0.1);
+    color: rgb(var(--success));
+  }
+  .dark .badge-success {
+    background-color: rgba(var(--success), 0.2);
+  }
+  .badge-error {
+    background-color: rgba(var(--error), 0.1);
+    color: rgb(var(--error));
+  }
+  .dark .badge-error {
+    background-color: rgba(var(--error), 0.2);
+  }
+  .badge-info {
+    background-color: rgba(var(--info), 0.1);
+    color: rgb(var(--info));
+  }
+  .dark .badge-info {
+    background-color: rgba(var(--info), 0.2);
+  }
+  .badge-warning {
+    background-color: rgba(var(--warning), 0.2);
+    color: #c28b00; /* Equivalent to text-yellow-800 */
+  }
+  .dark .badge-warning {
+    color: rgb(var(--warning));
+  }
+
+  /* Accordion content for smooth open/close */
+  .accordion-content {
+    @apply overflow-hidden transition-all duration-500 ease-in-out;
   }
 }
 
-@keyframes progress {
-  0% { width: 0%; }
-  50% { width: 70%; }
-  100% { width: 100%; }
+
+/*
+================================================================================
+ UTILITIES LAYER & ANIMATIONS
+================================================================================
+ This layer contains custom animations and utility classes.
+================================================================================
+*/
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+  /* New utility for a fade-in-up entrance animation */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out forwards;
+    opacity: 0; /* Start hidden */
+  }
 }
 
-@keyframes delay-bounce {
+@keyframes pulse-glow {
   0%, 100% {
-    transform: translateY(0);
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(var(--primary), 0.4);
   }
   50% {
-    transform: translateY(-20px);
+    opacity: 0.9;
+    box-shadow: 0 0 10px 4px rgba(var(--primary), 0.2);
+  }
+}
+
+/* New keyframe for the fade-in-up animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
