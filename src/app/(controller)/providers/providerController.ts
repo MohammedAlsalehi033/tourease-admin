@@ -9,9 +9,9 @@ export class ProviderController {
     @inject(ProvdersRepository) private adminRepository: ProvdersRepository
   ) {}
 
-  async getPendingTransportationProviders(status: string = 'pending'): Promise<TransportationProvider[]> {
+  async getPendingTransportationProviders(status: string = 'pending', page: number, pageSize: number): Promise<TransportationProvider[]> {
     console.log(`Controller: Fetching transportation providers with status: ${status}`);
-    return await this.adminRepository.getTransportationProvidersByStatus(status);
+    return await this.adminRepository.getTransportationProvidersByStatus(status, page, pageSize);
   }
 
   async getTransportationProviderDetails(providerId: string): Promise<TransportationProvider | null> {
@@ -55,7 +55,7 @@ export class ProviderController {
   }> {
     console.log('Controller: Generating admin dashboard statistics');
     
-    const transportationProviders = await this.adminRepository.getTransportationProvidersByStatus('pending');
+    const transportationProviders = await this.adminRepository.getTransportationProvidersByStatus('pending', 1, 1000);
     const accommodationProviders = await this.adminRepository.getPendingAccommodationProviders();
     
     return {

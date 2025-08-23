@@ -17,10 +17,11 @@ import {
 
 // Chart components
 import OverviewStats from './components/OverviewStats';
-import UserAnalyticsChart from './components/UserAnalyticsChart';
-import ContentAnalyticsChart from './components/ContentAnalyticsChart';
-import RatingAnalyticsChart from './components/RatingAnalyticsChart';
-import ProviderAnalyticsChart from './components/ProviderAnalyticsChart';
+import RatingAnalyticsChart, { RatingAnalyticsDashboard } from './components/RatingAnalyticsChart';
+import ProviderAnalyticsChart, { TransportationAnalyticsDashboard } from './components/ProviderAnalyticsChart';
+import { UserAnalyticsDashboard } from "./components/UserAnalyticsChart";
+import { ContentAnalyticsDashboard } from "./components/ContentAnalyticsChart";
+import AnalyticsOverviewDashboard from "./components/OverviewStats";
 
 type LoadingState = Record<string, boolean>;
 type ErrorState = Record<string, string | null>;
@@ -167,6 +168,7 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         fetchOverview();
+
     }, []); 
 
     return (
@@ -184,7 +186,7 @@ export default function AnalyticsPage() {
                     {errors['overview'] && <p className="text-error text-body-md">Error: {errors['overview']}</p>}
 
                     {overviewData ? (
-                        <OverviewStats data={overviewData} />
+                        <AnalyticsOverviewDashboard data={overviewData} />
                     ) : (!loading['overview'] && !errors['overview'] && <p className="text-body-md">No overview data loaded.</p>)}
                 </div>
 
@@ -260,7 +262,7 @@ export default function AnalyticsPage() {
                     {errors['users'] && <p className="text-error text-body-md">Error: {errors['users']}</p>}
 
                     {userAnalytics && (
-                        <UserAnalyticsChart data={userAnalytics} />
+                        <UserAnalyticsDashboard data={userAnalytics} />
                     )}
                 </div>
 
@@ -276,7 +278,7 @@ export default function AnalyticsPage() {
                     {errors['content'] && <p className="text-error text-body-md">Error: {errors['content']}</p>}
 
                     {contentAnalytics && (
-                        <ContentAnalyticsChart data={contentAnalytics} />
+                        <ContentAnalyticsDashboard data={contentAnalytics} />
                     )}
                 </div>
 
@@ -290,7 +292,7 @@ export default function AnalyticsPage() {
                     {errors['ratings'] && <p className="text-error text-body-md">Error: {errors['ratings']}</p>}
 
                     {ratingAnalytics && (
-                        <RatingAnalyticsChart data={ratingAnalytics} />
+                        <RatingAnalyticsDashboard data={ratingAnalytics} />
                     )}
                 </div>
 
@@ -304,7 +306,7 @@ export default function AnalyticsPage() {
                     {errors['providers'] && <p className="text-error text-body-md">Error: {errors['providers']}</p>}
 
                     {providerAnalytics && (
-                        <ProviderAnalyticsChart data={providerAnalytics} />
+                        <TransportationAnalyticsDashboard data={providerAnalytics} />
                     )}
                 </div>
 
@@ -349,6 +351,9 @@ export default function AnalyticsPage() {
                         </button>
                     </div>
                     {errors['export'] && <p className="text-error text-body-md mt-2">Export Error: {errors['export']}</p>}
+                </div>
+                <div>
+                    
                 </div>
             </div>
         </div>

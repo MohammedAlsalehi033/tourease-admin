@@ -7,10 +7,10 @@ import { AccommodationProvider,TransportationProvider } from './providersModel';
 export class ProvdersRepository {
   private readonly apiBaseUrl = getApiUrl('/');
 
-  async getTransportationProvidersByStatus(status: string = 'pending'): Promise<TransportationProvider[]> {
+  async getTransportationProvidersByStatus(status: string = 'pending', page: number, pageSize: number): Promise<TransportationProvider[]> {
     try {
-      const response = await fetch(`${this.apiBaseUrl}/transportationProviders?status=${status}`);
-      
+      const response = await fetch(`${this.apiBaseUrl}/transportationProviders?status=${status}&page=${page}&pageSize=${pageSize}`);
+
       if (!response.ok) {
         throw new Error(`Failed to fetch transportation providers: ${response.statusText}`);
       }

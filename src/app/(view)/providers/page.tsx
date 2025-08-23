@@ -18,9 +18,9 @@ async function rejectTransporationProvider(providerId: string) {
   return response;
 }
 
-async function getTransportationProviders(accountStatus = 'pending') {
+async function getTransportationProviders(accountStatus = 'pending', page = 1 , pageSize = 10) {
   // Pass the accountStatus parameter to the API call
-  const response = await provider.getPendingTransportationProviders(accountStatus)
+  const response = await provider.getPendingTransportationProviders(accountStatus, page, pageSize)
   console.log("Fetching transportation providers with accountStatus:", accountStatus)
   return response;
 }

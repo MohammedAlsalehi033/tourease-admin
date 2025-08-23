@@ -312,7 +312,7 @@
     opacity: 0.9;
     box-shadow: 0 0 10px 4px rgba(var(--primary), 0.2);
   }
-}
+} 
 
 /* New keyframe for the fade-in-up animation */
 @keyframes fade-in-up {
