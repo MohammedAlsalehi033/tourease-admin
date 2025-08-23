@@ -5,10 +5,6 @@ import {  UserController } from '@/app/(controller)/user/userController';
 import FilterSection from './FilterSection';
 
 
-
-
-
-
 async function UsersTable({ role, accountStatus, search }) {
   const userController = container.resolve(UserController);
   const response = await userController.getAllUsers(); 

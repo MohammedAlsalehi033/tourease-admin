@@ -1,3 +1,4 @@
+import "reflect-metadata"
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
