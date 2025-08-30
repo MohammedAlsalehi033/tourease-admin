@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
@@ -8,9 +9,8 @@ import FilterSection from './FilterSection';
 async function UsersTable({ role, accountStatus, search }) {
   const userController = container.resolve(UserController);
   const response = await userController.getAllUsers(); 
-  
-  // Transform and filter data
-  let transformedUsers = response.users.map(user => {
+
+  let transformedUsers = response.map(user => {
     
     return {
       id: user.id,

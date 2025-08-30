@@ -11,8 +11,10 @@ import { ReportsRepo } from '../(model)/reports/reportsRepo';
 import { reportsController } from '../(controller)/reports/reportsController';
 import { SettingsController } from '../(controller)/settings/settingsController';
 import { SettingsRepo } from '../(model)/settings/settingsRepo';
+import { ApiService } from '../services/apiService';
 
 
+container.registerSingleton(ApiService);
 container.registerSingleton(UserRepository);
 container.registerSingleton(UserController);
 container.registerSingleton(ContentController)

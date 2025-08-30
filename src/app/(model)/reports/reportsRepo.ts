@@ -1,13 +1,18 @@
 import { getApiUrl } from "@/app/lib/config";
 import { injectable } from "tsyringe";
 import { Report } from "./reportsModel";
+import { ApiService } from "@/app/services/apiService";
 @injectable()
 export class ReportsRepo {
 
+    constructor(private apiService: ApiService) {}
   private readonly apiBaseUrl = getApiUrl('/questions');
     // Methods for fetching and managing reports would go here
 
     async getAllReports(): Promise<Report[]> {
+        const response = await this.apiService.get<Report[]>(`${this.apiBaseUrl}`);
+        console.log(response)
+
    const dummy : Report[] = [{
        id: 1,
        content: {
