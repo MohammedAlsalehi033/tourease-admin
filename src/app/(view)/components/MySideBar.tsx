@@ -67,7 +67,7 @@ const AdminSidebar = () => {
             title: 'Additional',
             links: [
                 { href: '/analytics', text: 'Analytics & Reports', icon: ChartBarIcon },
-                { href: '/disputes', text: 'Dispute Management', icon: ShieldCheckIcon },
+                { href: '/reports', text: 'Dispute Management', icon: ShieldCheckIcon },
                 { href: '/policies', text: 'Platform Policies', icon: DocumentTextIcon },
                 { href: '/settings', text: 'System Configuration', icon: Cog6ToothIcon },
             ]

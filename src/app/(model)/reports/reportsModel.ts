@@ -144,4 +144,3 @@ export interface ReportDetailResponse {
   data: ReportDetail;
 }
 
-

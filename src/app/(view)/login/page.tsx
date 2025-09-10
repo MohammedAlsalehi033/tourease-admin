@@ -1,54 +1,55 @@
 "use client";
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [isCaptchaChecked, setIsCaptchaChecked] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleLogin = () => {
-
-    const fakeToken = JSON.stringify({ username, loggedInAt: Date.now() });
-    localStorage.setItem('session_token', fakeToken);
-    router.push('/dashboard');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password
+    });
+    if (res?.error) {
+      setError(res.error || "Invalid email or password");
+    } else if (res?.ok && res?.url) {
+      router.push("/");
+    } else {
+      setError("Login failed. Please try again.");
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-8 bg-white rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
-        <div className="mb-4">
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div className="flex items-center mb-6">
-          <input
-            id="captcha"
-            type="checkbox"
-            checked={isCaptchaChecked}
-            onChange={(e) => setIsCaptchaChecked(e.target.checked)}
-            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-          />
-          <label htmlFor="captcha" className="ml-2 block text-sm text-gray-900">
-            I am not a robot
-          </label>
-        </div>
-        <button
-          onClick={handleLogin}
-          disabled={!isCaptchaChecked || !username}
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Login
-        </button>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-80">
+        <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          className="w-full p-2 mb-4 border rounded"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          className="w-full p-2 mb-4 border rounded"
+          required
+        />
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+  <p className="mt-4 text-center text-sm">Don&apos;t have an account? <a href="/signup" className="text-blue-600">Sign Up</a></p>
+      </form>
     </div>
   );
 }

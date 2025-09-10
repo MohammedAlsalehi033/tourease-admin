@@ -12,7 +12,7 @@ const environments = {
 };
 
 const getCurrentEnvironment = (): Environment => {
-  return (process.env.NEXT_PUBLIC_ENV as Environment) || 'production';
+  return (process.env.NEXT_PUBLIC_ENV as Environment) || 'development';
 };
 
 export const config = environments[getCurrentEnvironment()];

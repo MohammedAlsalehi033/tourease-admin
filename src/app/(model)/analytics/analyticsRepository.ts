@@ -9,11 +9,20 @@ import {
     ProviderAnalyticsData,
     AnalyticsFilters,
     AnalyticsExportFilters
-} from './analyticsModel'; // Adjust path as needed
+} from './analyticsModel';
+import { ApiService } from '@/app/services/apiService';
+
+export interface AnalyticsApiResponse<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+}
 
 @injectable()
 export class AnalyticsRepository {
-    private readonly apiBaseUrl = getAdminApiUrl('/');
+    constructor(private apiService: ApiService) {}
+    
+    private readonly apiBaseUrl = getAdminApiUrl('/admin');
 
     private buildQueryString(params?: any): string {
         if (!params) return '';
@@ -26,12 +35,8 @@ export class AnalyticsRepository {
 
     async getAnalyticsOverview(): Promise<AnalyticsOverviewData | null> {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/overview`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch overview analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<AnalyticsOverviewData>>('/admin//overview');
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching overview analytics:', error);
             throw error;
@@ -41,12 +46,8 @@ export class AnalyticsRepository {
     async getUserAnalytics(filters?: AnalyticsFilters): Promise<UserAnalyticsData | null> {
         try {
             const queryString = this.buildQueryString(filters);
-            const response = await fetch(`${this.apiBaseUrl}/users${queryString}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch user analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<UserAnalyticsData>>(`/admin/users${queryString}`);
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching user analytics:', error);
             throw error;
@@ -56,12 +57,8 @@ export class AnalyticsRepository {
     async getTransportationBookingAnalytics(filters?: AnalyticsFilters): Promise<BookingAnalyticsData | null> {
         try {
             const queryString = this.buildQueryString(filters);
-            const response = await fetch(`${this.apiBaseUrl}/bookings/transportation${queryString}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch transportation booking analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<BookingAnalyticsData>>(`/admin/bookings/transportation${queryString}`);
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching transportation booking analytics:', error);
             throw error;
@@ -71,12 +68,8 @@ export class AnalyticsRepository {
     async getAccommodationBookingAnalytics(filters?: AnalyticsFilters): Promise<BookingAnalyticsData | null> {
         try {
             const queryString = this.buildQueryString(filters);
-            const response = await fetch(`${this.apiBaseUrl}/bookings/accommodation${queryString}`);
-             if (!response.ok) {
-                throw new Error(`Failed to fetch accommodation booking analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<BookingAnalyticsData>>(`/admin/bookings/accommodation${queryString}`);
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching accommodation booking analytics:', error);
             throw error;
@@ -84,14 +77,10 @@ export class AnalyticsRepository {
     }
 
     async getContentAnalytics(filters?: AnalyticsFilters): Promise<ContentAnalyticsData | null> {
-         try {
+        try {
             const queryString = this.buildQueryString(filters);
-            const response = await fetch(`${this.apiBaseUrl}/content${queryString}`);
-             if (!response.ok) {
-                throw new Error(`Failed to fetch content analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<ContentAnalyticsData>>(`/admin/content${queryString}`);
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching content analytics:', error);
             throw error;
@@ -101,12 +90,8 @@ export class AnalyticsRepository {
     async getRatingAnalytics(filters?: AnalyticsFilters): Promise<RatingAnalyticsData | null> {
         try {
             const queryString = this.buildQueryString(filters);
-            const response = await fetch(`${this.apiBaseUrl}/ratings${queryString}`);
-             if (!response.ok) {
-                throw new Error(`Failed to fetch rating analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<RatingAnalyticsData>>(`/admin/ratings${queryString}`);
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching rating analytics:', error);
             throw error;
@@ -114,48 +99,39 @@ export class AnalyticsRepository {
     }
 
     async getProviderAnalytics(filters?: AnalyticsFilters): Promise<ProviderAnalyticsData | null> {
-         try {
+        try {
             const queryString = this.buildQueryString(filters);
-            const response = await fetch(`${this.apiBaseUrl}/providers${queryString}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch provider analytics: ${response.statusText}`);
-            }
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.apiService.get<AnalyticsApiResponse<ProviderAnalyticsData>>(`/admin/providers${queryString}`);
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching provider analytics:', error);
             throw error;
         }
     }
 
-     async exportAnalytics(filters: AnalyticsExportFilters): Promise<Blob | any | null> {
+    async exportAnalytics(filters: AnalyticsExportFilters): Promise<Blob | any | null> {
         try {
             const queryString = this.buildQueryString(filters);
             const response = await fetch(`${this.apiBaseUrl}/export${queryString}`);
 
             if (!response.ok) {
-                 // Attempt to read error message from JSON body if possible
-                 try {
-                     const errorData = await response.json();
-                     throw new Error(errorData.message || `Export failed: ${response.statusText}`);
-                 } catch (jsonError) {
-                     // Fallback if response is not JSON
-                     throw new Error(`Export failed: ${response.statusText}`);
-                 }
+                try {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Export failed: ${response.statusText}`);
+                } catch (jsonError) {
+                    throw new Error(`Export failed: ${response.statusText}`);
+                }
             }
 
-            // Handle based on requested format or Content-Type header
             const contentType = response.headers.get('Content-Type');
 
             if (filters.format === 'pdf' || contentType?.includes('application/pdf')) {
                 return await response.blob();
             } else if (filters.format === 'csv' || contentType?.includes('text/csv')) {
-                 // Could return blob or text depending on how you want to handle CSV
-                 return await response.blob();
-                // return await response.text();
-            } else { // Default to JSON
+                return await response.blob();
+            } else {
                 const data = await response.json();
-                 return data.success ? data.data : data; // Return full response if not standard success format
+                return data.success ? data.data : data;
             }
         } catch (error) {
             console.error('Error exporting analytics:', error);
@@ -163,3 +139,4 @@ export class AnalyticsRepository {
         }
     }
 }
+

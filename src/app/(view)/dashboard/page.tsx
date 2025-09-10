@@ -61,7 +61,7 @@ export default function AdminDashboard() {
                 // Fetch data concurrently
                 const [analyticsData, pendingTransportData /*, questionsData */] = await Promise.all([
                     analyticsController.getAnalyticsOverview(),
-                    providerController.getPendingTransportationProviders(),
+                    providerController.getPendingTransportationProviders("pending", 1, 10),
                     // contentController.getAllQuestions() // Fetch questions if needed elsewhere
                 ]);
 

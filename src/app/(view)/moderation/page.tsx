@@ -35,6 +35,8 @@ async function unblockCommentAction(questionId: number) {
 
 
 function ContentTable({ content }) {
+
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

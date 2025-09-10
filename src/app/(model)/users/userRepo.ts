@@ -1,27 +1,18 @@
-// src/repositories/productRepository.ts
 import { injectable } from 'tsyringe';
-import { getApiUrl } from '../../lib/config';
-import { PaginatedUsersResponse, User, UserFilter } from './userModel';
+import { PaginatedUsersResponse, User, UserFilter, UserApiResponse } from './userModel';
+import { ApiService } from '@/app/services/apiService';
 
 @injectable()
 export class UserRepository {
-    private readonly baseApiUrl = getApiUrl();
+    constructor(private apiService: ApiService) {}
 
     async getUserById(id: string): Promise<User | null> {
         try {
-            const response = await fetch(`${this.baseApiUrl}/users/${id}`);
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    return null;
-                }
-                throw new Error(`Failed to fetch user: ${response.statusText} (${response.status})`);
-            }
-
-            const result = await response.json();
+            const result = await this.apiService.get<UserApiResponse<User>>(`/users/${id}`);
             return result.success ? result.data : null;
         } catch (error) {
             console.error('Error fetching user by ID:', error);
+            // The apiService already throws an error, but re-throwing ensures it propagates.
             throw error;
         }
     }
@@ -30,7 +21,7 @@ export class UserRepository {
         page: number = 1,
         pageSize: number = 10,
         filter?: UserFilter
-    ): Promise<PaginatedUsersResponse> {
+    ) {
         try {
             const queryParams = new URLSearchParams({
                 page: page.toString(),
@@ -44,49 +35,25 @@ export class UserRepository {
                 if (filter.role) queryParams.append('role', filter.role);
             }
 
-            const response = await fetch(`${this.baseApiUrl}/getAllUsers?${queryParams.toString()}`);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch users: ${response.statusText} (${response.status})`);
-            }
-
-            const result = await response.json();
+            const result = await this.apiService.get(`/getAllUsers?${queryParams.toString()}`);
 
             if (!result.success) {
-                 throw new Error(`API Error fetching users: ${result.message || 'Unknown error'}`);
+                throw new Error(`API Error fetching users: ${result.message || 'Unknown error'}`);
             }
 
-            return {
-                users: result.data,
-                pagination: result.pagination,
-                success: result.success
-            };
+            return result.data;
         } catch (error) {
             console.error('Error fetching all users:', error);
             throw error;
         }
     }
 
-    async blockUser(id: string): Promise<{ success: boolean; message?: string; data?: User }> {
+    async blockUser(id: string): Promise<UserApiResponse<User>> {
         try {
-            const response = await fetch(`${this.baseApiUrl}/users/${id}/block`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                 const errorData = await response.text();
-                throw new Error(`Failed to block user: ${response.statusText} (${response.status}) - ${errorData}`);
+            const result = await this.apiService.put<UserApiResponse<User>>(`/users/${id}/block`, {});
+            if (!result.success) {
+                throw new Error(`API Error blocking user: ${result.message || 'Unknown error'}`);
             }
-
-            const result = await response.json();
-
-             if (!result.success) {
-                  throw new Error(`API Error blocking user: ${result.message || 'Unknown error'}`);
-             }
-
             return result;
         } catch (error) {
             console.error('Error blocking user:', error);
@@ -94,31 +61,18 @@ export class UserRepository {
         }
     }
 
-
-    async unblockUser(id: string): Promise<{ success: boolean; message?: string; data?: User }> {
+    async unblockUser(id: string): Promise<UserApiResponse<User>> {
         try {
-            const response = await fetch(`${this.baseApiUrl}/users/${id}/block`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                 const errorData = await response.text();
-                throw new Error(`Failed to block user: ${response.statusText} (${response.status}) - ${errorData}`);
-            }
-
-            const result = await response.json();
-
+            // Assuming the unblock endpoint is the same as block, just with a different internal logic on the backend
+            const result = await this.apiService.put<UserApiResponse<User>>(`/users/${id}/unblock`, {});
              if (!result.success) {
-                  throw new Error(`API Error blocking user: ${result.message || 'Unknown error'}`);
-             }
-
+                throw new Error(`API Error unblocking user: ${result.message || 'Unknown error'}`);
+            }
             return result;
         } catch (error) {
-            console.error('Error blocking user:', error);
+            console.error('Error unblocking user:', error);
             throw error;
         }
     }
 }
+
