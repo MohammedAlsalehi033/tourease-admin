@@ -7,6 +7,8 @@ import { ProviderController } from '../(controller)/providers/providerController
 import { ProvdersRepository } from '../(model)/providers/providerRepo';
 import { AnalyticsController } from '../(controller)/analytics/analyticsController';
 import { AnalyticsRepository } from '../(model)/analytics/analyticsRepository';
+import { ReportsRepository } from '../(model)/reports/reportsRepository';
+import { ReportsController } from '../(controller)/reports/reportsController';
 
 
 container.registerSingleton(UserRepository);
@@ -16,5 +18,7 @@ container.registerSingleton(ProviderController)
 container.registerSingleton(ProvdersRepository)
 container.registerSingleton(AnalyticsRepository)
 container.registerSingleton(AnalyticsController)
+container.registerSingleton(ReportsRepository)
+container.registerSingleton(ReportsController)
 
 export { container };
