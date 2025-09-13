@@ -1,25 +1,47 @@
 import "reflect-metadata"
+
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
-import { ContentController } from '@/app/(controller)/content/contentController';
 import { revalidatePath } from 'next/cache';
-import { reportsController } from "@/app/(controller)/reports/reportsController";
+import { ReportsController } from "@/app/(controller)/reports/reportsController";
 
 // --- NEW SERVER ACTIONS FOR REPORTS ---
 
-async function updateReportStatusAction(reportId: number, status: 'RESOLVED' | 'DISMISSED' | 'INVESTIGATING') {
+async function resolveReportAction(formData: FormData) {
   'use server';
-  try {
-    const reportsDI = container.resolve(ContentController);
-    // Assuming a method exists in your controller to update the report status
-    await reportsDI.updateReportStatus(reportId, status /*, adminId */);
-    revalidatePath('/moderation');
-    return { success: true, message: `Report status updated to ${status}` };
-  } catch (error) {
-    console.error(`Error updating report status:`, error);
-    return { success: false, message: `Failed to update report: ${error.message}` };
-  }
+  const reportId = Number(formData.get('reportId'));
+  if (!reportId) return;
+  const reportsDI = container.resolve(ReportsController);
+  await reportsDI.updateReportStatus(reportId, 'resolved');
+  revalidatePath('/reports');
+}
+
+async function dismissReportAction(formData: FormData) {
+  'use server';
+  const reportId = Number(formData.get('reportId'));
+  if (!reportId) return;
+  const reportsDI = container.resolve(ReportsController);
+  await reportsDI.updateReportStatus(reportId, 'dismissed');
+  revalidatePath('/reports');
+}
+
+async function investigateReportAction(formData: FormData) {
+  'use server';
+  const reportId = Number(formData.get('reportId'));
+  if (!reportId) return;
+  const reportsDI = container.resolve(ReportsController);
+  await reportsDI.updateReportStatus(reportId, 'investigating');
+  revalidatePath('/reports');
+}
+
+async function deleteReportAction(formData: FormData) {
+  'use server';
+  const reportId = Number(formData.get('reportId'));
+  if (!reportId) return;
+  const reportsDI = container.resolve(ReportsController);
+  await reportsDI.deleteReport(reportId);
+  revalidatePath('/reports');
 }
 
 // --- REFACTORED COMPONENTS FOR REPORTS ---
@@ -31,8 +53,9 @@ function ReportTable({ reports }) {
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Report ID</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reported Content</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reporter</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reported User</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reason</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
@@ -42,37 +65,52 @@ function ReportTable({ reports }) {
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
           {reports.map((report) => (
             <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{report.id}</td>
-              <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                <Link href={report.content.link} className="font-medium text-primary hover:underline">
-                  {report.content.type} #{report.content.id}
-                </Link>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <Link href={`/reports/${report.id}`} className="text-primary underline">{report.id}</Link>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{report.reporter.name}</td>
-              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{report.reason}</td>
+              <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{report.reportableType}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{report.User_Report_reporterIdToUser?.username || report.User_Report_reporterIdToUser?.email || report.reporterId}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{report.User_Report_reportedUserIdToUser?.username || report.User_Report_reportedUserIdToUser?.email || '-'}</td>
+              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{report.reportReason}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  report.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                  report.status === 'RESOLVED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                  report.status === 'DISMISSED' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' :
-                  'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' // Investigating
+                  report.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                  report.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                  report.status === 'dismissed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' :
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                 }`}>
                   {report.status}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{report.createdAt}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{new Date(report.createdAt).toLocaleDateString()}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                {report.status === 'PENDING' || report.status === 'INVESTIGATING' ? (
+                {report.status === 'pending' || report.status === 'investigating' ? (
                   <div className="flex space-x-2">
-                    <form action={updateReportStatusAction.bind(null, report.id, 'RESOLVED')}>
+                    <form action={resolveReportAction}>
+                      <input type="hidden" name="reportId" value={report.id} />
                       <button className="text-green-600 hover:text-green-900">Resolve</button>
                     </form>
-                    <form action={updateReportStatusAction.bind(null, report.id, 'DISMISSED')}>
+                    <form action={dismissReportAction}>
+                      <input type="hidden" name="reportId" value={report.id} />
                       <button className="text-gray-600 hover:text-gray-900">Dismiss</button>
+                    </form>
+                    <form action={investigateReportAction}>
+                      <input type="hidden" name="reportId" value={report.id} />
+                      <button className="text-blue-600 hover:text-blue-900">Investigate</button>
+                    </form>
+                    <form action={deleteReportAction}>
+                      <input type="hidden" name="reportId" value={report.id} />
+                      <button className="text-red-600 hover:text-red-900">Delete</button>
                     </form>
                   </div>
                 ) : (
-                  <span className="text-gray-400">Handled</span>
+                  <div className="flex space-x-2">
+                    <span className="text-gray-400">Handled</span>
+                    <form action={deleteReportAction}>
+                      <input type="hidden" name="reportId" value={report.id} />
+                      <button className="text-red-600 hover:text-red-900">Delete</button>
+                    </form>
+                  </div>
                 )}
               </td>
             </tr>
@@ -118,7 +156,7 @@ function ReportTableSkeleton() {
 
 function ReportFilterSection({ searchParams }) {
   return (
-    <form action="/moderation" method="GET">
+    <form action="/reports" method="GET">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -126,32 +164,40 @@ function ReportFilterSection({ searchParams }) {
           </label>
           <select id="status" name="status" className="input w-full" defaultValue={searchParams.status || ""}>
             <option value="">All Statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="INVESTIGATING">Investigating</option>
-            <option value="RESOLVED">Resolved</option>
-            <option value="DISMISSED">Dismissed</option>
+            <option value="pending">Pending</option>
+            <option value="investigating">Investigating</option>
+            <option value="resolved">Resolved</option>
+            <option value="dismissed">Dismissed</option>
           </select>
         </div>
-        
         <div>
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Search
+          <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Type
           </label>
-          <input
-            type="text"
-            id="search"
-            name="search"
-            placeholder="Search by reason, reporter ID, or content ID"
-            className="input w-full"
-            defaultValue={searchParams.search || ''}
-          />
+          <select id="type" name="type" className="input w-full" defaultValue={searchParams.type || ""}>
+            <option value="">All Types</option>
+            <option value="USER">USER</option>
+            <option value="TRANSPORTATION_LISTING">TRANSPORTATION_LISTING</option>
+            <option value="ACCOMMODATION">ACCOMMODATION</option>
+            <option value="ROOM">ROOM</option>
+            <option value="REVIEW">REVIEW</option>
+            <option value="QUESTION">QUESTION</option>
+            <option value="COMMENT">COMMENT</option>
+            <option value="MESSAGE">MESSAGE</option>
+          </select>
         </div>
-        
+        <div>
+          <label htmlFor="reporterId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Reporter ID
+          </label>
+          <input type="text" id="reporterId" name="reporterId" placeholder="Reporter userId"
+            className="input w-full" defaultValue={searchParams.reporterId || ''} />
+        </div>
         <div className="flex items-end">
           <button type="submit" className="btn-primary h-10">
             Apply Filters
           </button>
-          <Link href="/moderation" className="btn-outlined ml-2 h-10 flex items-center justify-center">
+          <Link href="/reports" className="btn-outlined ml-2 h-10 flex items-center justify-center">
             Reset
           </Link>
         </div>
@@ -162,35 +208,18 @@ function ReportFilterSection({ searchParams }) {
 
 export default async function ReportModerationPage({ searchParams }) {
   const status = searchParams?.status || '';
-  const search = searchParams?.search || '';
+  const type = searchParams?.type || '';
+  const reporterId = searchParams?.reporterId || '';
   const currentPage = Number(searchParams?.pageNumber) || 1;
+  const limit = Number(searchParams?.limit) || 10;
 
-  // 1. Fetch reports data instead of questions
-  const contentController = container.resolve(reportsController);
-  // Assumes a new controller method `getAllReports` exists
-  const response = await contentController.getAllReports();
-  
-  const reportsData = response || [];
-  
-  // 2. Transform the report data for the table
-  const transformedReports = reportsData.map(report => ({
-    id: report.id,
-    reason: report.reason,
-    status: report.status,
-    createdAt: new Date(report.createdAt).toLocaleDateString(),
-    reporter: {
-      id: report.reporter?.id || 0,
-      name: report.reporter?.name || 'Anonymous',
-    },
-    content: {
-      id: report.content.id,
-      type: report.content.type,
-      // Generate a link to the reported content (you might need to adjust the path)
-      link: `/moderation/${report.content.type.toLowerCase()}/${report.content.id}`
-    }
-  }));
-
-  const hasNextPage = reportsData.length === 10; // Simple pagination logic
+  const reportsDI = container.resolve(ReportsController);
+  const { reports: reportsData, pagination } = await reportsDI.listReports(currentPage, limit, {
+    status: status || undefined,
+    reportableType: type || undefined,
+    reporterId: reporterId || undefined,
+  });
+  const stats = await reportsDI.getReportsStatistics();
 
   return (
     <div className="px-6 py-8 ">
@@ -199,6 +228,12 @@ export default async function ReportModerationPage({ searchParams }) {
         <p className="text-body-md text-gray-600 dark:text-gray-400">
           Review and manage user-submitted reports to ensure platform integrity.
         </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="card p-4"><div className="text-sm text-gray-500">Total</div><div className="text-2xl font-semibold">{stats.data.totalReports}</div></div>
+        <div className="card p-4"><div className="text-sm text-gray-500">Pending</div><div className="text-2xl font-semibold">{stats.data.pendingReports}</div></div>
+        <div className="card p-4"><div className="text-sm text-gray-500">Resolved</div><div className="text-2xl font-semibold">{stats.data.resolvedReports}</div></div>
+        <div className="card p-4"><div className="text-sm text-gray-500">Dismissed</div><div className="text-2xl font-semibold">{stats.data.dismissedReports}</div></div>
       </div>
       
       <div className="card mb-6">
@@ -214,34 +249,34 @@ export default async function ReportModerationPage({ searchParams }) {
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-headline-sm font-semibold">Inbox</h2>
            <div className="text-sm text-gray-500 dark:text-gray-400">
-             {status === 'PENDING' && <span className="font-medium text-yellow-500">Pending reports require review</span>}
+             {status === 'pending' && <span className="font-medium text-yellow-500">Pending reports require review</span>}
            </div>
         </div>
         
         <div className="p-4">
           <Suspense fallback={<ReportTableSkeleton />}>
-            <ReportTable reports={transformedReports} />
+            <ReportTable reports={reportsData} />
           </Suspense>
           
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700 dark:text-gray-300">
-              Page {currentPage}
+              Page {pagination.page} of {pagination.totalPages}
             </div>
             
             <div className="flex space-x-2">
               <Link 
-                href={{ pathname: '/moderation', query: { ...searchParams, pageNumber: currentPage - 1 } }}
-                className={`btn-outlined text-sm py-1 px-3 ${currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}`}
-                aria-disabled={currentPage <= 1}
-                tabIndex={currentPage <= 1 ? -1 : undefined}
+                href={{ pathname: '/reports', query: { ...searchParams, pageNumber: Math.max(1, pagination.page - 1) } }}
+                className={`btn-outlined text-sm py-1 px-3 ${pagination.page <= 1 ? 'pointer-events-none opacity-50' : ''}`}
+                aria-disabled={pagination.page <= 1}
+                tabIndex={pagination.page <= 1 ? -1 : undefined}
               >
                 Previous
               </Link>
               <Link 
-                href={{ pathname: '/moderation', query: { ...searchParams, pageNumber: currentPage + 1 } }}
-                className={`btn-outlined text-sm py-1 px-3 ${!hasNextPage ? 'pointer-events-none opacity-50' : ''}`}
-                aria-disabled={!hasNextPage}
-                tabIndex={!hasNextPage ? -1 : undefined}
+                href={{ pathname: '/reports', query: { ...searchParams, pageNumber: Math.min(pagination.totalPages, pagination.page + 1) } }}
+                className={`btn-outlined text-sm py-1 px-3 ${pagination.page >= pagination.totalPages ? 'pointer-events-none opacity-50' : ''}`}
+                aria-disabled={pagination.page >= pagination.totalPages}
+                tabIndex={pagination.page >= pagination.totalPages ? -1 : undefined}
               >
                 Next
               </Link>

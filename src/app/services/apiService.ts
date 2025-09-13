@@ -1,4 +1,4 @@
-// src/app/services/apiService.ts
+
 import { injectable } from 'tsyringe';
 import { getServerSession } from 'next-auth';
 import { getSession } from 'next-auth/react';
@@ -12,8 +12,8 @@ interface FetchOptions {
 
 @injectable()
 export class ApiService {
-  readonly baseUrl2: string = 'http://13.201.19.41:3003/api';
-  readonly baseUrl: string = 'http://localhost:3000/api';
+  readonly baseUrl: string = 'http://52.66.238.242:3003/api';
+  readonly baseUrl2: string = 'http://localhost:3000/api';
 
   constructor() {
 
@@ -65,6 +65,7 @@ export class ApiService {
       // Handle HTTP errors
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log(errorData , "errorData")
         throw new Error(
           errorData.message || `API request failed with status: ${JSON.stringify(response)}`
         );

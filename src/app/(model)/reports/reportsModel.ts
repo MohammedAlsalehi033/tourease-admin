@@ -1,15 +1,13 @@
 export type ReportStatus = 'pending' | 'resolved' | 'dismissed' | string;
 export type ReportableType =
   | 'USER'
-  | 'QUESTION'
-  | 'COMMENT'
-  | 'MESSAGE'
-  | 'OFFER'
   | 'TRANSPORTATION_LISTING'
   | 'ACCOMMODATION'
   | 'ROOM'
-  | 'TRANSPORTATION_BOOKING'
-  | 'ACCOMMODATION_BOOKING'
+  | 'REVIEW'
+  | 'QUESTION'
+  | 'COMMENT'
+  | 'MESSAGE'
   | string;
 
 export interface ReportUserRef {
@@ -34,6 +32,9 @@ export interface ReportItem {
   status: ReportStatus;
   createdAt: string;
   updatedAt: string;
+  resolvedBy?: string | null;
+  resolvedAt?: string | null;
+  resolutionNotes?: string | null;
   reporterId: string;
   reportedUserId: string | null;
   transportationListingId: number | null;
@@ -45,6 +46,7 @@ export interface ReportItem {
   offerId: number | null;
   transportationBookingId: number | null;
   accommodationBookingId: number | null;
+  reviewId: number | null;
   Admin?: ReportAdminRef | null;
   User_Report_reporterIdToUser?: ReportUserRef | null;
   User_Report_reportedUserIdToUser?: ReportUserRef | null;
@@ -137,6 +139,14 @@ export interface ReportDetail extends ReportItem {
     totalPrice: number;
     traveler?: { username: string; email: string };
   } | null;
+  Review?: {
+    id: number;
+    rating: number;
+    content: string;
+    user?: { username: string; email: string };
+    transportationListing?: { id: number; startLocationText: string; endLocationText: string };
+    accommodation?: { id: number; name: string; location: string };
+  } | null;
 }
 
 export interface ReportDetailResponse {
@@ -144,3 +154,39 @@ export interface ReportDetailResponse {
   data: ReportDetail;
 }
 
+export interface ReportStatusUpdateResponse {
+  success: boolean;
+  message: string;
+  data: ReportDetail;
+}
+
+
+// Statistics types
+export interface ReportsByTypeItem {
+  type: ReportableType;
+  count: number;
+}
+
+export interface ReportsByStatusItem {
+  status: ReportStatus;
+  count: number;
+}
+
+export interface ReportsStatisticsData {
+  totalReports: number;
+  pendingReports: number;
+  resolvedReports: number;
+  dismissedReports: number;
+  reportsByType: ReportsByTypeItem[];
+  reportsByStatus: ReportsByStatusItem[];
+}
+
+export interface ReportsStatisticsResponse {
+  success: boolean;
+  data: ReportsStatisticsData;
+}
+
+export interface DeleteReportResponse {
+  success: boolean;
+  message: string;
+}

@@ -19,7 +19,7 @@ export default function LoginPage() {
     });
     if (res?.error) {
       setError(res.error || "Invalid email or password");
-    } else if (res?.ok && res?.url) {
+    } else if (res?.ok) {
       router.push("/");
     } else {
       setError("Login failed. Please try again.");

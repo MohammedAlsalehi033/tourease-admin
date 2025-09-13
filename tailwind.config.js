@@ -6,70 +6,208 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   darkMode: 'class',
-  theme:  {
-    extend: {animation: {
-      'progress-bar': 'progress 3s ease-in-out infinite',
-      'bounce': 'delay-bounce 1s infinite',
-      'delay-100': 'delay-bounce 1s infinite 0.1s',
-      'delay-200': 'delay-bounce 1s infinite 0.2s',
-    },
-      colors: {
-        // Primary colors from Flutter theme
-        primary: {
-          light: '#42A5F5', // Secondary color in Flutter (Blue 400)
-          DEFAULT: '#2196F3', // Primary color in Flutter (Material Blue)
-          dark: '#0D47A1', // Darker shade for hover states
+  theme: {
+    extend: {
+      animation: {
+        'gradient-shift': 'gradient-shift 8s ease infinite',
+        'mesh': 'mesh-animation 20s ease infinite',
+        'fade-in-up': 'fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'fade-in-scale': 'fade-in-scale 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards',
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s infinite',
+        'skeleton': 'skeleton-loading 1.5s infinite',
+        'progress': 'progress-animation 2s ease-in-out infinite',
+        'slide-in-right': 'slide-in-right 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'morph': 'morph 8s ease-in-out infinite',
+        'spin-slow': 'spin 10s linear infinite',
+        'bounce-scale': 'bounce-scale 2s ease-in-out infinite',
+        'text-shimmer': 'text-shimmer 2s linear infinite',
+        'border-beam': 'border-beam 4s linear infinite',
+      },
+      keyframes: {
+        'gradient-shift': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
         },
-        error: '#E53935',    // Red 600
-        success: '#43A047',  // Green 600
-        warning: '#FFA000',  // Amber 700
-        info: '#0288D1',     // Light Blue 700
+        'mesh-animation': {
+          '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },
+          '33%': { transform: 'translate(-20px, -20px) rotate(1deg)' },
+          '66%': { transform: 'translate(20px, -10px) rotate(-1deg)' },
+        },
+        'fade-in-up': {
+          from: { opacity: '0', transform: 'translateY(30px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in-scale': {
+          from: { opacity: '0', transform: 'scale(0.8)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
+        },
+        'skeleton-loading': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        'progress-animation': {
+          '0%': { width: '0' },
+          '50%': { width: '70%' },
+          '100%': { width: '100%' },
+        },
+        'slide-in-right': {
+          from: { transform: 'translateX(100%)', opacity: '0' },
+          to: { transform: 'translateX(0)', opacity: '1' },
+        },
+        'morph': {
+          '0%, 100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' },
+          '50%': { borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' },
+        },
+        'bounce-scale': {
+          '0%, 100%': { transform: 'scale(1) translateY(0)' },
+          '50%': { transform: 'scale(1.05) translateY(-10px)' },
+        },
+        'text-shimmer': {
+          from: { backgroundPosition: '0 0' },
+          to: { backgroundPosition: '200% 0' },
+        },
+        'border-beam': {
+          '0%': { backgroundPosition: '0% 0%' },
+          '100%': { backgroundPosition: '200% 200%' },
+        },
+      },
+      colors: {
+        primary: {
+          light: '#90CAF9',
+          DEFAULT: '#2196F3',
+          dark: '#0D47A1',
+          50: '#E3F2FD',
+          100: '#BBDEFB',
+          200: '#90CAF9',
+          300: '#64B5F6',
+          400: '#42A5F5',
+          500: '#2196F3',
+          600: '#1E88E5',
+          700: '#1976D2',
+          800: '#1565C0',
+          900: '#0D47A1',
+        },
+        accent: {
+          DEFAULT: '#5E35B1',
+          light: '#9575CD',
+          dark: '#311B92',
+        },
+        error: '#F44336',
+        success: '#4CAF50',
+        warning: '#FF9800',
+        info: '#03A9F4',
         
         light: {
-          background: '#F5F5F5', // Slightly off-white
-          surface: '#FFFFFF',    // White
-          text: 'rgba(0, 0, 0, 0.87)', // Black87
+          background: '#F8FAFC',
+          surface: '#FFFFFF',
+          'surface-glass': 'rgba(255, 255, 255, 0.7)',
+          text: '#0F172A',
+          'text-secondary': '#64748B',
         },
         
         dark: {
-          background: '#121212',  // Standard Material dark background
-          surface: '#202020',     // Slightly lighter than background
-          text: '#FFFFFF',        // White
-        }
+          background: '#09090B',
+          surface: '#18181B',
+          'surface-glass': 'rgba(24, 24, 27, 0.6)',
+          text: '#F8FAFC',
+          'text-secondary': '#94A3B8',
+        },
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(135deg, #2196F3 0%, #5E35B1 100%)',
+        'gradient-surface': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'gradient-success': 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',
+        'gradient-mesh': `radial-gradient(at 40% 20%, hsla(28,100%,74%,0.5) 0px, transparent 50%),
+                         radial-gradient(at 80% 0%, hsla(189,100%,56%,0.3) 0px, transparent 50%),
+                         radial-gradient(at 0% 50%, hsla(355,100%,93%,0.2) 0px, transparent 50%)`,
+        'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(var(--tw-gradient-stops))',
       },
       borderRadius: {
-        'standard': '12px',   // _borderRadius in Flutter
-        'button': '8px',      // _buttonBorderRadius in Flutter
+        'standard': '16px',
+        'button': '12px',
+        'small': '8px',
+        'large': '24px',
+        'xl': '32px',
       },
       fontSize: {
-        // Matches Flutter's text theme sizes
-        'display-lg': '32px',
-        'display-md': '28px',
-        'display-sm': '24px',
-        'headline-lg': '22px',
-        'headline-md': '20px',
-        'headline-sm': '18px',
-        'title-lg': '16px',
-        'title-md': '14px',
-        'title-sm': '12px',
-        'body-lg': '16px',
-        'body-md': '14px',
-        'body-sm': '12px',
-        'label-lg': '14px',
-        'label-md': '12px',
-        'label-sm': '10px',
+        'display-lg': ['32px', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'display-md': ['28px', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'display-sm': ['24px', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'headline-lg': ['22px', { lineHeight: '1.3', fontWeight: '600' }],
+        'headline-md': ['20px', { lineHeight: '1.3', fontWeight: '600' }],
+        'headline-sm': ['18px', { lineHeight: '1.3', fontWeight: '600' }],
+        'title-lg': ['16px', { lineHeight: '1.5', fontWeight: '600' }],
+        'title-md': ['14px', { lineHeight: '1.5', fontWeight: '600' }],
+        'title-sm': ['12px', { lineHeight: '1.5', fontWeight: '600' }],
+        'body-lg': ['16px', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-md': ['14px', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-sm': ['12px', { lineHeight: '1.6', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.05em' }],
+        'label-md': ['12px', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.05em' }],
+        'label-sm': ['10px', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.05em' }],
+      },
+      fontFamily: {
+        'display': ['Space Grotesk', 'Poppins', 'sans-serif'],
+        'body': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       fontWeight: {
-        // Matches Flutter's font weights
+        light: '300',
         normal: '400',
         medium: '500',
         semibold: '600',
         bold: '700',
+        extrabold: '800',
+        black: '900',
       },
       boxShadow: {
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+        'glass-hover': '0 20px 60px 0 rgba(31, 38, 135, 0.25)',
+        'glow-primary': '0 0 30px rgba(33, 150, 243, 0.5)',
+        'glow-accent': '0 0 30px rgba(94, 53, 177, 0.5)',
+        'neon': '0 0 20px rgba(33, 150, 243, 0.5)',
+        'float': '0 10px 30px rgba(33, 150, 243, 0.4)',
         'card-light': '0 2px 4px rgba(0, 0, 0, 0.1)',
         'card-dark': '0 4px 8px rgba(0, 0, 0, 0.3)',
+        'inner-glow': 'inset 0 2px 4px rgba(0,0,0,0.1)',
       },
-    }},
-  
+      backdropBlur: {
+        xs: '2px',
+        sm: '4px',
+        md: '10px',
+        lg: '20px',
+        xl: '40px',
+      },
+      transitionTimingFunction: {
+        'bounce-in': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'smooth-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '120': '30rem',
+        '128': '32rem',
+        '144': '36rem',
+      },
+      zIndex: {
+        '60': '60',
+        '70': '70',
+        '80': '80',
+        '90': '90',
+        '100': '100',
+      },
+    },
+  },
+  plugins: [],
 }

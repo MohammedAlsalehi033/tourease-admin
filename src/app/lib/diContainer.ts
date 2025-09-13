@@ -10,8 +10,8 @@ import { AnalyticsRepository } from '../(model)/analytics/analyticsRepository';
 import { SettingsController } from '../(controller)/settings/settingsController';
 import { SettingsRepo } from '../(model)/settings/settingsRepo';
 import { ApiService } from '../services/apiService';
-import { ReportsRepository } from '../(model)/reports/reportsRepository';
 import { ReportsController } from '../(controller)/reports/reportsController';
+import { ReportsRepo } from '../(model)/reports/reportsRepo';
 
 
 container.registerSingleton(ApiService);
@@ -24,7 +24,8 @@ container.registerSingleton(AnalyticsRepository)
 container.registerSingleton(AnalyticsController)
 container.registerSingleton(SettingsRepo)
 container.registerSingleton(SettingsController)
-container.registerSingleton(ReportsRepository)
+// ApiService already registered above
+container.registerSingleton(ReportsRepo)
 container.registerSingleton(ReportsController)
 
 export { container };
