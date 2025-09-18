@@ -2,11 +2,11 @@ import "reflect-metadata";
 import React from 'react';
 import { container } from '@/app/lib/diContainer';
 import { ContentController } from '@/app/(controller)/content/contentController';
-import { FaUserCircle, FaTrashAlt, FaUserSlash } from 'react-icons/fa';
+import { FaTrashAlt, FaUserSlash } from 'react-icons/fa';
 import { revalidatePath } from 'next/cache';
 import { UserController } from "@/app/(controller)/user/userController";
 
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
   try {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -49,17 +49,16 @@ async function blockUserAction(userId: string, username: string | undefined, cur
     }
 }
 
-interface PageProps {
-  params: {
-    id: string;
-    questionId?: string;
-  };
-}
+type RouteParams = {
+  id: string;
+  questionId?: string;
+};
 
-const Page = async ({ params }: PageProps) => {
+const Page = async ({ params }: { params: Promise<RouteParams> }) => {
+  const resolvedParams = await params;
   let comments = [];
   let error = null;
-  const questionId = params.id || params.questionId || '';
+  const questionId = resolvedParams.id || resolvedParams.questionId || '';
   const currentPath = `/moderation/questions/${questionId}`;
 
   try {
