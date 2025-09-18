@@ -22,7 +22,6 @@ export interface AnalyticsApiResponse<T> {
 export class AnalyticsRepository {
     constructor(private apiService: ApiService) {}
     
-    private readonly apiBaseUrl = getAdminApiUrl('/admin');
 
     private buildQueryString(params?: any): string {
         if (!params) return '';
@@ -35,7 +34,7 @@ export class AnalyticsRepository {
 
     async getAnalyticsOverview(): Promise<AnalyticsOverviewData | null> {
         try {
-            const response = await this.apiService.get<AnalyticsApiResponse<AnalyticsOverviewData>>('/admin//overview');
+            const response = await this.apiService.get<AnalyticsApiResponse<AnalyticsOverviewData>>('/admin/overview');
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching overview analytics:', error);
