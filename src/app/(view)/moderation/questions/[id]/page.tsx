@@ -2,9 +2,10 @@ import "reflect-metadata";
 import React from 'react';
 import { container } from '@/app/lib/diContainer';
 import { ContentController } from '@/app/(controller)/content/contentController';
-import { FaTrashAlt, FaUserSlash } from 'react-icons/fa';
+import { FaTrashAlt, FaUserSlash, FaSpinner, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import { revalidatePath } from 'next/cache';
 import { UserController } from "@/app/(controller)/user/userController";
+import { ModerationClient } from './ModerationClient';
 
 const formatDate = (dateString: string): string => {
   try {
@@ -31,7 +32,7 @@ async function deleteCommentAction(commentId: number, currentPath: string) {
     return { success: true, message: 'Comment deleted successfully' };
   } catch (error) {
     console.error('Error deleting comment:', error);
-    return { success: false, message: `Failed to delete comment: ${error.message}` };
+    return { success: false, message: `Failed to delete comment: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
 
@@ -45,7 +46,7 @@ async function blockUserAction(userId: string, username: string | undefined, cur
         return { success: true, message: 'User blocked successfully' };
     } catch (error) {
         console.error('Error blocking user:', error);
-        return { success: false, message: `Failed to block user: ${error.message}` };
+        return { success: false, message: `Failed to block user: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
 }
 
@@ -56,20 +57,23 @@ type RouteParams = {
 
 const Page = async ({ params }: { params: Promise<RouteParams> }) => {
   const resolvedParams = await params;
-  let comments = [];
-  let error = null;
+  let comments: any[] = [];
+  let error: string | null = null;
+  let isLoading = true;
   const questionId = resolvedParams.id || resolvedParams.questionId || '';
   const currentPath = `/moderation/questions/${questionId}`;
 
   try {
     const commentsDI = container.resolve(ContentController);
-    const fetchedComments = await commentsDI.getCommentsByQuestionId(questionId);
+    const fetchedComments = await commentsDI.getCommentsByQuestionId(parseInt(questionId));
     console.log(questionId)
     comments = Array.isArray(fetchedComments) ? fetchedComments : [];
+    isLoading = false;
   } catch (err) {
     console.error("Failed to fetch comments:", err);
-    error = `Failed to load comments: ${err.message}`;
+    error = `Failed to load comments: ${err instanceof Error ? err.message : 'Unknown error'}`;
     comments = [];
+    isLoading = false;
   }
 
   return (
@@ -79,66 +83,57 @@ const Page = async ({ params }: { params: Promise<RouteParams> }) => {
           Content Moderation
         </h1>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="card mb-6 p-8 text-center rounded-lg shadow">
+            <div className="flex flex-col items-center space-y-4">
+              <FaSpinner className="w-8 h-8 animate-spin text-primary dark:text-primary-light" />
+              <p className="text-body-lg text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                Loading comments...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
         {error && (
           <div className="card mb-6 bg-error/90 text-white p-4 rounded-lg shadow-md">
-            <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
-
-        {comments.length === 0 && !error && (
-          <div className="card mb-6 p-6 text-center rounded-lg shadow">
-            <p className="text-body-lg text-light-on-surface-variant dark:text-dark-on-surface-variant">No comments to display.</p>
-          </div>
-        )}
-
-        <div className="space-y-6">
-          {comments.map((comment) => (
-            <div key={comment.id} className="card p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-              <div className="flex items-center mb-4">
-              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-2 flex items-center justify-center">
-                      <span className="text-gray-500 dark:text-gray-300">{comment.user?.username.charAt(0).toUpperCase()}</span>
-                    </div>
-                <div className="flex-grow">
-                  <p className="text-title-md font-medium leading-tight">{comment.user?.username || 'Anonymous'}</p>
-                  <p className="text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant leading-tight">
-                    {formatDate(comment.createdAt)}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-body-md mb-5 whitespace-pre-wrap break-words">
-                {comment.content}
-              </p>
-
-              <hr className="border-t border-light-outline/30 dark:border-dark-outline/30 mb-4" />
-
-              <div className="flex space-x-3 justify-end items-center">
-                <form action={blockUserAction.bind(null, comment.userId, comment.user?.username, currentPath)}>
-                  <button
-                    type="submit"
-                    className="btn-text text-warning hover:bg-warning/10 flex items-center space-x-1.5 px-3 py-1.5 rounded"
-                    title="Block User"
-                  >
-                    <FaUserSlash className="w-4 h-4" />
-                    <span>Block User</span>
-                  </button>
-                </form>
-
-                <form action={deleteCommentAction.bind(null, comment.id, currentPath)}>
-                  <button
-                    type="submit"
-                    className="btn-text text-error hover:bg-error/10 flex items-center space-x-1.5 px-3 py-1.5 rounded"
-                    title="Delete Comment"
-                  >
-                    <FaTrashAlt className="w-4 h-4" />
-                    <span>Delete</span>
-                  </button>
-                </form>
+            <div className="flex items-center space-x-2">
+              <FaExclamationTriangle className="w-5 h-5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Error</p>
+                <p className="text-sm">{error}</p>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {comments.length === 0 && !error && !isLoading && (
+          <div className="card mb-6 p-6 text-center rounded-lg shadow">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <FaExclamationTriangle className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-body-lg text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                No comments to display.
+              </p>
+              <p className="text-body-sm text-light-on-surface-variant/70 dark:text-dark-on-surface-variant/70">
+                Question ID: {questionId}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Comments List with Client Component */}
+        {!isLoading && !error && comments.length > 0 && (
+          <ModerationClient
+            comments={comments}
+            currentPath={currentPath}
+            deleteCommentAction={deleteCommentAction}
+            blockUserAction={blockUserAction}
+          />
+        )}
       </div>
     </div>
   );
