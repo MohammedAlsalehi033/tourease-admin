@@ -214,11 +214,24 @@ export default async function ReportModerationPage({ searchParams }) {
   const limit = Number(searchParams?.limit) || 10;
 
   const reportsDI = container.resolve(ReportsController);
-  const { reports: reportsData, pagination } = await reportsDI.listReports(currentPage, limit, {
+ 
+  let reportsData = [];
+  let pagination = {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  };
+  try {
+    const { reports: reportsData, pagination } = await reportsDI.listReports(currentPage, limit, {
     status: status || undefined,
     reportableType: type || undefined,
     reporterId: reporterId || undefined,
   });
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    return <div>Error fetching reports : {error.message}</div>;
+  }
   const stats = await reportsDI.getReportsStatistics();
 
   return (

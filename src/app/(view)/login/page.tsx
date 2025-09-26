@@ -27,15 +27,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-80">
+    <div className="flex flex-col items-center justify-center min-h-screen ">
+      <form onSubmit={handleLogin} className="p-8 rounded w-80 bg-primary">
         <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border rounded bg-surface"
           required
         />
         <input

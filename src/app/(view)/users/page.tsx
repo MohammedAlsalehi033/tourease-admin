@@ -9,7 +9,13 @@ import FilterSection from './FilterSection';
 
 async function UsersTable({ role, accountStatus, search }) {
   const userController = container.resolve(UserController);
-  const response = await userController.getAllUsers(); 
+  let response: any[] = [];
+  try {
+  response = await userController.getAllUsers(); 
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return <div>Error fetching users : {error.message}</div>;
+  }
 
   let transformedUsers = response.map(user => {
     

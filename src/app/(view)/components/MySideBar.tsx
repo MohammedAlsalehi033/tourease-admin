@@ -9,6 +9,7 @@ import {
     FlagIcon, DocumentTextIcon, Bars3Icon
 } from '@heroicons/react/24/outline';
 import ThemeToggler from './themeToggler';
+import SignoutButton from './signoutButton';
 
 // Helper component for animated links
 const NavLink = ({ href, icon: Icon, text, isActive, animationDelay = 0 }) => (
@@ -122,10 +123,14 @@ const AdminSidebar = () => {
                                         />
                                     );
                                 })}
+                                <div className="mt-6 px-4">
+                    <SignoutButton />
+                </div>
                             </div>
                         </div>
                     ))}
                 </nav>
+                
             </aside>
         </div>
     )
