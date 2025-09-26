@@ -47,6 +47,17 @@ async function deleteReportAction(formData: FormData) {
 // --- REFACTORED COMPONENTS FOR REPORTS ---
 
 function ReportTable({ reports }) {
+  console.log('ReportTable received reports:', reports, 'length:', reports?.length);
+  
+  if (!reports || reports.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No reports found</div>
+        <p className="text-gray-400 dark:text-gray-500">There are no reports matching your current filters.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -207,13 +218,19 @@ function ReportFilterSection({ searchParams }) {
 }
 
 export default async function ReportModerationPage({ searchParams }) {
+  console.log('=== ReportModerationPage Starting ===');
+  console.log('searchParams:', searchParams);
+  
   const status = searchParams?.status || '';
   const type = searchParams?.type || '';
   const reporterId = searchParams?.reporterId || '';
   const currentPage = Number(searchParams?.pageNumber) || 1;
   const limit = Number(searchParams?.limit) || 10;
 
+  console.log('Parsed params:', { status, type, reporterId, currentPage, limit });
+
   const reportsDI = container.resolve(ReportsController);
+  console.log('ReportsController resolved:', !!reportsDI);
  
   let reportsData = [];
   let pagination = {
@@ -222,17 +239,60 @@ export default async function ReportModerationPage({ searchParams }) {
     total: 0,
     totalPages: 1,
   };
+  
   try {
-    const { reports: reportsData, pagination } = await reportsDI.listReports(currentPage, limit, {
-    status: status || undefined,
-    reportableType: type || undefined,
-    reporterId: reporterId || undefined,
-  });
+    console.log('Calling listReports...');
+    const result = await reportsDI.listReports(currentPage, limit, {
+      status: status || undefined,
+      reportableType: type || undefined,
+      reporterId: reporterId || undefined,
+    });
+    console.log('Fetched reports result:', result);
+    
+    // Handle different possible response formats
+    if (result && result.reports) {
+      reportsData = result.reports;
+      pagination = result.pagination || pagination;
+    } else if (Array.isArray(result)) {
+      // Fallback if the response is directly an array
+      reportsData = result;
+    }
+    
+    console.log('Final reports data:', reportsData, 'length:', reportsData?.length);
+    console.log('Final pagination:', pagination);
   } catch (error) {
     console.error('Error fetching reports:', error);
-    return <div>Error fetching reports : {error.message}</div>;
+    return (
+      <div className="px-6 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <h3 className="text-red-800 font-medium">Error fetching reports</h3>
+          <p className="text-red-600 mt-1">{error.message}</p>
+          <p className="text-red-600 text-sm mt-2">Check the console for more details.</p>
+        </div>
+      </div>
+    );
   }
-  const stats = await reportsDI.getReportsStatistics();
+  
+  let stats = {
+    data: {
+      totalReports: 0,
+      pendingReports: 0,
+      resolvedReports: 0,
+      dismissedReports: 0
+    }
+  };
+  
+  try {
+    console.log('Fetching statistics...');
+    stats = await reportsDI.getReportsStatistics();
+    console.log('Fetched statistics:', stats);
+  } catch (error) {
+    console.error('Error fetching statistics:', error);
+  }
+
+  console.log('=== ReportModerationPage Rendering ===');
+  console.log('Reports to render:', reportsData?.length || 0);
+  console.log('Stats:', stats?.data);
 
   return (
     <div className="px-6 py-8 ">
