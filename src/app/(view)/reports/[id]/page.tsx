@@ -109,7 +109,6 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
                 <div>
                   <div className="font-medium">Comment: {report.Comment.content}</div>
                   {report.Comment.question?.title && <div className="text-gray-500">On: {report.Comment.question.title}</div>}
-                  <Link href={`/comments/${report.Comment.id}`} target="_blank" className="text-primary underline">Open comment</Link>
                 </div>
               )}
               {report.reportableType === 'USER' && report.User_Report_reportedUserIdToUser && (
