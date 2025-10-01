@@ -13,6 +13,7 @@ export interface ContentItem {
   vote: Vote[];
   _count: ContentCount;
   status?: 'active' | 'flagged' | 'blocked'; // Added for moderation purposes
+  accountStatus?: 'active' | 'flagged' | 'blocked'; // Frontend compatibility
   flagCount?: number; // Added for moderation purposes
   flagReasons?: string[]; // Added for moderation purposes
 }

@@ -30,6 +30,15 @@ export class ContentController {
     return this.contentRepository.deleteQuestion(contentId, adminId);
   }
 
+  async unblockQuestion(contentId: number, adminId: string = ""): Promise<BlockContentResponse> {
+    return this.contentRepository.unblockContent(contentId, adminId);
+  }
+
+  async deleteQuestion(contentId: number, adminId: string = ""): Promise<BlockContentResponse> {
+    // Permanent deletion - this should be used carefully
+    return this.contentRepository.deleteQuestion(contentId, adminId);
+  }
+
   async blockComment(contentId: number, adminId: string = ""): Promise<BlockContentResponse> {
     return this.contentRepository.deleteComment(contentId, adminId);
   }

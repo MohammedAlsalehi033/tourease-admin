@@ -1,9 +1,11 @@
 import "reflect-metadata"
 import { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { container } from "@/app/lib/diContainer";
 import { ContentController } from '@/app/(controller)/content/contentController';
 import { revalidatePath } from 'next/cache';
+import DeleteButton from './DeleteButton';
 
 // Renamed for clarity
 async function blockCommentAction(questionId: number) {
@@ -30,6 +32,20 @@ async function unblockCommentAction(questionId: number) {
   } catch (error) {
     console.error('Error unblocking question:', error);
     return { success: false, message: `Failed to unblock question: ${error.message}` };
+  }
+}
+
+// Added for permanent deletion
+async function deleteQuestionAction(questionId: number) {
+  'use server';
+  try {
+    const contentController = container.resolve(ContentController);
+    await contentController.deleteQuestion(questionId, /* adminId */);
+    revalidatePath('/moderation'); // Correct path revalidation
+    return { success: true, message: 'Question deleted permanently' };
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    return { success: false, message: `Failed to delete question: ${error.message}` };
   }
 }
 
@@ -67,7 +83,13 @@ function ContentTable({ content }) {
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
                   {item.author.avatar ? (
-                    <img src={item.author.avatar} alt={item.author.name} className="h-8 w-8 rounded-full mr-2" />
+                    <Image 
+                      src={item.author.avatar} 
+                      alt={item.author.name} 
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full mr-2" 
+                    />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-2 flex items-center justify-center">
                       <span className="text-gray-500 dark:text-gray-300">{item.author.name.charAt(0).toUpperCase()}</span>
@@ -118,6 +140,12 @@ function ContentTable({ content }) {
                       </button>
                     </form>
                   )}
+                  
+                  <DeleteButton
+                    questionId={item.id}
+                    questionTitle={item.title}
+                    onDelete={deleteQuestionAction}
+                  />
                 </div>
               </td>
             </tr>
@@ -210,20 +238,27 @@ export default async function ContentModeration({ searchParams }) {
   const currentPage = Number(searchParams?.pageNumber) || 1;
 
   const contentController = container.resolve(ContentController);
-  const response = await contentController.getAllQuestions(currentPage, 10, { accountStatus, search });
   
+  // Map accountStatus to status for the backend
+  const filter = {
+    status: accountStatus as 'active' | 'flagged' | 'blocked' | undefined,
+    search: search || undefined
+  };
+
+  const response = await contentController.getAllQuestions(currentPage, 10, filter);
   
   const questions = response.data || [];
   
   
   const transformedContent = questions.map(item => {
-    const contentaccountStatus = item.accountStatus || (item.downvotes > 2 ? 'flagged' : 'active');
+    // Use the accountStatus from the backend response
+    const contentAccountStatus = item.accountStatus || item.status || (item.downvotes > 2 ? 'flagged' : 'active');
     return {
       id: item.id,
       title: item.title || 'Untitled Question',
       description: item.description || 'No description provided',
       contentType: 'question',
-      accountStatus: contentaccountStatus,
+      accountStatus: contentAccountStatus,
       flagCount: item.downvotes || 0,
       createdAt: item.createdAt.split('T')[0],
       updatedAt: item.updatedAt.split('T')[0],
@@ -238,7 +273,7 @@ export default async function ContentModeration({ searchParams }) {
     };
   });
 
-  const hasNextPage = true
+  const hasNextPage = currentPage < response.pagination.totalPages;
 
   return (
     <div className="px-6 py-8 ">
@@ -275,21 +310,22 @@ export default async function ContentModeration({ searchParams }) {
           {/* 3. Pagination controls */}
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700 dark:text-gray-300">
-              Page {searchParams.pageNumber || 1}
+              Page {currentPage} of {response.pagination.totalPages} ({response.pagination.total} total items)
             </div>
             
             <div className="flex space-x-2">
               <Link 
                 href={{ pathname: '/moderation', query: { ...searchParams, pageNumber: currentPage - 1 } }}
-                className={`btn-outlined text-sm py-1 px-3 ${searchParams.pageNumber === 1 ? 'pointer-events-none opacity-50' : ''}`}
-                aria-disabled={searchParams.pageNumber === 1}
-                tabIndex={searchParams.pageNumber > 1 ? -1 : undefined}
+                className={`btn-outlined text-sm py-1 px-3 ${currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}`}
+                aria-disabled={currentPage <= 1}
+                tabIndex={currentPage <= 1 ? -1 : undefined}
               >
                 Previous
               </Link>
               <Link 
                 href={{ pathname: '/moderation', query: { ...searchParams, pageNumber: currentPage + 1 } }}
                 className={`btn-outlined text-sm py-1 px-3 ${!hasNextPage ? 'pointer-events-none opacity-50' : ''}`}
+                aria-disabled={!hasNextPage}
                 tabIndex={!hasNextPage ? -1 : undefined}
               >
                 Next

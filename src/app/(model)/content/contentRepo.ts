@@ -40,18 +40,66 @@ export class ContentRepository {
 
       const contentWithModerationInfo = responseData.data.map(
         (item: ContentItem) => {
-          if (!item.status) {
-            const isFlagged = item.downvotes > 5;
-            item.status = isFlagged ? "flagged" : "active";
-            item.flagCount = isFlagged ? item.downvotes : 0;
+          // Determine status based on backend data or infer from votes
+          let status = item.status;
+          if (!status) {
+            if (item.downvotes > 5) {
+              status = "flagged";
+            } else {
+              status = "active";
+            }
           }
-          return item;
+          
+          // Set accountStatus for frontend compatibility
+          const updatedItem = {
+            ...item,
+            status,
+            accountStatus: status,
+            flagCount: status === "flagged" ? item.downvotes : 0
+          };
+          
+          return updatedItem;
         }
       );
 
+      // Filter content on frontend if backend doesn't support full filtering
+      let filteredContent = contentWithModerationInfo;
+      
+      // Apply status filter
+      if (filter?.status) {
+        filteredContent = filteredContent.filter(item => item.status === filter.status);
+      }
+      
+      // Apply search filter (search in title, description, or author name)
+      if (filter?.search) {
+        const searchTerm = filter.search.toLowerCase();
+        filteredContent = filteredContent.filter(item => {
+          const titleMatch = item.title?.toLowerCase().includes(searchTerm);
+          const descriptionMatch = item.description?.toLowerCase().includes(searchTerm);
+          const authorMatch = item.user?.username?.toLowerCase().includes(searchTerm);
+          const idMatch = item.id.toString().includes(searchTerm);
+          
+          return titleMatch || descriptionMatch || authorMatch || idMatch;
+        });
+      }
+
+      // Calculate pagination based on filtered results
+      const totalFiltered = filteredContent.length;
+      const totalPages = Math.ceil(totalFiltered / pageSize);
+      
+      // Apply pagination to filtered results
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedContent = filteredContent.slice(startIndex, endIndex);
+
       return {
-        data: contentWithModerationInfo,
-        pagination: responseData.pagination,
+        data: paginatedContent,
+        pagination: {
+          total: totalFiltered,
+          page: page,
+          pageSize: pageSize,
+          totalPages: totalPages,
+        },
         success: responseData.success,
       };
     } catch (error) {
@@ -81,11 +129,11 @@ export class ContentRepository {
     }
   }
 
-  async deleteQuestion(questionId: number, adminId: string) {
+  async deleteQuestion(questionId: number, _adminId: string) {
     try {
       // NOTE: The request body is omitted as the apiService.delete method does not support it.
       // The backend should rely on the authenticated user's ID from the token.
-      const response = await this.apiService.delete<ContentApiResponse<any>>(
+      const response = await this.apiService.delete<ContentApiResponse<BlockContentResponse>>(
         `/questions/${questionId}`
       );
       return response;
@@ -95,11 +143,11 @@ export class ContentRepository {
     }
   }
 
-  async deleteComment(commentID: number, adminId: string) {
+  async deleteComment(commentID: number, _adminId: string) {
     try {
       // NOTE: The request body is omitted as the apiService.delete method does not support it.
       // The backend should rely on the authenticated user's ID from the token.
-      const response = await this.apiService.delete<ContentApiResponse<any>>(
+      const response = await this.apiService.delete<ContentApiResponse<BlockContentResponse>>(
         `/comments/${commentID}`
       );
       return response;
