@@ -6,6 +6,9 @@ import { Users, Home, AlertTriangle, ChevronRight, Truck, BarChart2, Settings, B
 import { container } from '@/app/lib/diContainer';
 import { AnalyticsController } from "@/app/(controller)/analytics/analyticsController";
 import { ProviderController } from "@/app/(controller)/providers/providerController";
+import { UserController } from "@/app/(controller)/user/userController";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 // Removed unused import: import { data } from "autoprefixer";
 
 // --- Helper Function ---
@@ -22,9 +25,8 @@ const formatDate = (dateString: string | Date | undefined): string => {
 
 // --- Component ---
 export default function AdminDashboard() {
-    const { theme, setTheme } = useTheme();
+    const router = useRouter();
     const [mounted, setMounted] = useState(false);
-    const [activeTab, setActiveTab] = useState("dashboard");
     const [isLoading, setIsLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -34,18 +36,19 @@ export default function AdminDashboard() {
         activeUsers: 0,
         newUsersToday: 0,
         pendingApprovalsCount: 0, // Will be updated based on fetched pending providers
-        reportedContentCount: 0, // Will use mock data length for now
+        recentUsersCount: 0, // Will be updated based on fetched recent users
     });
-
-    // Keep mock data for reported content as no fetch method was provided for it
-    const reportedContent = [
-        { id: "RC-7842", type: "Review", reporter: "user@example.com", date: "11 Apr 2025", status: "Pending" },
-        { id: "RC-7841", type: "Dispute", reporter: "provider@example.com", date: "10 Apr 2025", status: "Pending" },
-        { id: "RC-7835", type: "Forum Post", reporter: "traveler@example.com", date: "09 Apr 2025", status: "Pending" }
-    ];
 
     // State for pending providers (will hold fetched data)
     const [pendingProviders, setPendingProviders] = useState<Array<{ id: string; name: string; type: string; submitted: string }>>([]);
+
+    // State for recent users (will hold fetched data)
+    const [recentUsers, setRecentUsers] = useState<Array<{ id: string; username: string; email: string; role: string; registrationDate: string; accountStatus: string }>>([]);
+
+    // Handler to navigate to provider details
+    const handleViewProvider = (providerId: string) => {
+        router.push(`/providers/${providerId}`);
+    };
 
 
     // --- Fetch Data ---
@@ -56,32 +59,32 @@ export default function AdminDashboard() {
             try {
                 const analyticsController = container.resolve(AnalyticsController);
                 const providerController = container.resolve(ProviderController);
-                // const contentController = container.resolve(ContentController); // Keep if needed later e.g., for reported content
+                const userController = container.resolve(UserController);
 
                 // Fetch data concurrently
-                const [analyticsData, pendingTransportData /*, questionsData */] = await Promise.all([
+                const [analyticsData, pendingTransportData, recentUsersData] = await Promise.all([
                     analyticsController.getAnalyticsOverview(),
                     providerController.getPendingTransportationProviders("pending", 1, 10),
-                    // contentController.getAllQuestions() // Fetch questions if needed elsewhere
+                    userController.getAllUsers(1, 5), // Fetch 5 most recent users
                 ]);
 
                 // --- Process Analytics Data ---
                 // Assuming analyticsData has structure: { totalUsers, activeUsers, newUsersToday, /* ... possibly other counts */ }
                 if (analyticsData) {
-                     // Use mock length for counts not directly available in analyticsData for now
+                     // Update stats with real data
                      setDashboardStats({
                          totalUsers: analyticsData.totalUsers ?? 0,
                          activeUsers: analyticsData.activeUsers ?? 0,
                          newUsersToday: analyticsData.newUsersToday ?? 0,
                          pendingApprovalsCount: pendingTransportData?.length ?? 0, // Update based on fetched providers
-                         reportedContentCount: reportedContent.length, // Using mock data length
+                         recentUsersCount: recentUsersData?.users?.length ?? 0, // Update based on fetched recent users
                      });
                  } else {
                     // Fallback or keep initial state if analytics data fails
                     setDashboardStats(prev => ({
                         ...prev,
                          pendingApprovalsCount: pendingTransportData?.length ?? 0,
-                         reportedContentCount: reportedContent.length,
+                         recentUsersCount: recentUsersData?.users?.length ?? 0,
                     }));
                  }
 
@@ -89,12 +92,15 @@ export default function AdminDashboard() {
                 // --- Process Pending Transportation Providers ---
                 // Assuming pendingTransportData is an array of { providerId, user: { username }, createdAt, ... }
                  if (pendingTransportData && Array.isArray(pendingTransportData)) {
-                     const mappedProviders = pendingTransportData.map((provider: any) => ({
-                         id: provider.providerId || 'N/A',
-                         name: provider.user?.username || 'Unknown Name', // Make sure 'user' is included in the response
-                         type: 'Transportation', // Hardcoded as we only fetched transportation
-                         submitted: formatDate(provider.createdAt),
-                     }));
+                     const mappedProviders = pendingTransportData.map((provider: unknown) => {
+                         const p = provider as { providerId?: string; user?: { username?: string }; createdAt?: string };
+                         return {
+                             id: p.providerId || 'N/A',
+                             name: p.user?.username || 'Unknown Name',
+                             type: 'Transportation',
+                             submitted: formatDate(p.createdAt),
+                         };
+                     });
                      setPendingProviders(mappedProviders);
 
                      // Update the pending count stat again in case analytics data wasn't available
@@ -107,12 +113,37 @@ export default function AdminDashboard() {
                       setDashboardStats(prev => ({ ...prev, pendingApprovalsCount: 0 }));
                  }
 
+                // --- Process Recent Users ---
+                // Assuming recentUsersData has structure: { users: [], totalUsers, currentPage, totalPages }
+                if (recentUsersData && Array.isArray(recentUsersData.users)) {
+                    const mappedUsers = recentUsersData.users.map((user: unknown) => {
+                        const u = user as { userId?: string; username?: string; email?: string; role?: string; createdAt?: string; accountStatus?: string };
+                        return {
+                            id: u.userId || 'N/A',
+                            username: u.username || 'Unknown User',
+                            email: u.email || 'N/A',
+                            role: u.role || 'User',
+                            registrationDate: formatDate(u.createdAt),
+                            accountStatus: u.accountStatus || 'active',
+                        };
+                    });
+                    setRecentUsers(mappedUsers);
+
+                    // Update the recent users count stat
+                    setDashboardStats(prev => ({
+                        ...prev,
+                        recentUsersCount: mappedUsers.length,
+                    }));
+                } else {
+                    setRecentUsers([]); // Set empty if fetch fails or returns invalid data
+                    setDashboardStats(prev => ({ ...prev, recentUsersCount: 0 }));
+                }
+
 
                 // console.log("Fetched Analytics:", analyticsData);
                 // console.log("Fetched Pending Transport:", pendingTransportData);
-                // console.log("Fetched Questions:", questionsData); // Use if needed
 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error("Failed to fetch dashboard data:", error);
                 setFetchError("Failed to load dashboard data. Please try again later.");
                 // Keep potentially partially loaded stats, but clear lists that failed
@@ -154,26 +185,26 @@ export default function AdminDashboard() {
                          <>
                              <div className="mb-6">
                                  <h1 className="text-headline-lg font-semibold mb-2">Dashboard Overview</h1>
-                                 <p className="text-body-md text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening on the platform today.</p>
+                                 <p className="text-body-md text-gray-600 dark:text-gray-400">Welcome back! Here&apos;s what&apos;s happening on the platform today.</p>
                              </div>
 
                             {/* Stats Cards - Now using dashboardStats state */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                                <div className="card p-4">
+                                <Link href="/users" className="card p-4 hover:shadow-lg transition-shadow cursor-pointer">
                                     <h3 className="text-gray-500 dark:text-gray-400 text-body-md mb-2">Total Users</h3>
                                     <p className="text-display-md font-bold">{dashboardStats.totalUsers}</p>
                                     <div className="text-success text-sm mt-2 flex items-center">
                                         <span>+{dashboardStats.newUsersToday} today</span>
                                     </div>
-                                </div>
-                                <div className="card p-4">
+                                </Link>
+                                <Link href="/users?accountStatus=active" className="card p-4 hover:shadow-lg transition-shadow cursor-pointer">
                                     <h3 className="text-gray-500 dark:text-gray-400 text-body-md mb-2">Active Users</h3>
                                     <p className="text-display-md font-bold">{dashboardStats.activeUsers}</p>
                                      <div className="text-body-sm text-gray-500 dark:text-gray-400 mt-2">
                                          {dashboardStats.totalUsers > 0 ? `${Math.round((dashboardStats.activeUsers / dashboardStats.totalUsers) * 100)}% of total` : 'N/A'}
                                      </div>
-                                </div>
-                                <div className="card p-4">
+                                </Link>
+                                <Link href="/providers?accountStatus=pending" className="card p-4 hover:shadow-lg transition-shadow cursor-pointer">
                                      <h3 className="text-gray-500 dark:text-gray-400 text-body-md mb-2">Pending Approvals</h3>
                                      <p className="text-display-md font-bold">{dashboardStats.pendingApprovalsCount}</p>
                                      {dashboardStats.pendingApprovalsCount > 0 && (
@@ -181,8 +212,8 @@ export default function AdminDashboard() {
                                              <span>Requires attention</span>
                                          </div>
                                      )}
-                                 </div>
-                                <div className="card p-4">
+                                 </Link>
+                                <Link href="/moderation" className="card p-4 hover:shadow-lg transition-shadow cursor-pointer">
                                     <h3 className="text-gray-500 dark:text-gray-400 text-body-md mb-2">Content Flags</h3>
                                      <p className="text-display-md font-bold">{dashboardStats.reportedContentCount}</p>
                                      {dashboardStats.reportedContentCount > 0 && (
@@ -190,41 +221,51 @@ export default function AdminDashboard() {
                                              <span>Requires review</span>
                                          </div>
                                      )}
-                                 </div>
+                                 </Link>
                             </div>
 
                             {/* Content that needs attention */}
                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                                 {/* Content moderation section - Still uses mock data */}
+                                 {/* Recent User Registrations - Uses real data from UserController */}
                                  <div className="card">
                                      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                         <h2 className="text-headline-sm font-semibold">Reported Content</h2>
-                                         <button className="btn-text flex items-center">
+                                         <h2 className="text-headline-sm font-semibold">Recent User Registrations</h2>
+                                         <Link href="/users" className="btn-text flex items-center">
                                              View All <ChevronRight size={16} />
-                                         </button>
+                                         </Link>
                                      </div>
                                      <div className="p-4">
-                                        {reportedContent.length > 0 ? (
+                                        {recentUsers.length > 0 ? (
                                              <table className="w-full">
                                                  <thead>
                                                      <tr className="text-left text-gray-500 dark:text-gray-400 text-body-sm">
-                                                         <th className="pb-2">ID</th>
-                                                         <th className="pb-2">Type</th>
-                                                         <th className="pb-2">Reporter</th>
-                                                         <th className="pb-2">Date</th>
+                                                         <th className="pb-2">Username</th>
+                                                         <th className="pb-2">Email</th>
+                                                         <th className="pb-2">Role</th>
+                                                         <th className="pb-2">Registered</th>
                                                          <th className="pb-2">Status</th>
                                                      </tr>
                                                  </thead>
                                                  <tbody>
-                                                     {reportedContent.map((item, index) => (
-                                                         <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
-                                                             <td className="py-3 text-body-md">{item.id}</td>
-                                                             <td className="py-3 text-body-md">{item.type}</td>
-                                                             <td className="py-3 text-body-md">{item.reporter}</td>
-                                                             <td className="py-3 text-body-md">{item.date}</td>
+                                                     {recentUsers.map((user) => (
+                                                         <tr 
+                                                             key={user.id} 
+                                                             className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                                                             onClick={() => router.push(`/users/${user.id}`)}
+                                                         >
+                                                             <td className="py-3 text-body-md">{user.username}</td>
+                                                             <td className="py-3 text-body-md">{user.email}</td>
+                                                             <td className="py-3 text-body-md capitalize">{user.role}</td>
+                                                             <td className="py-3 text-body-md">{user.registrationDate}</td>
                                                              <td className="py-3 text-body-md">
-                                                                 <span className="inline-block px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">
-                                                                     {item.status}
+                                                                 <span className={`inline-block px-2 py-1 rounded-full text-xs ${
+                                                                     user.accountStatus === 'active' 
+                                                                         ? 'bg-success/10 text-success' 
+                                                                         : user.accountStatus === 'blocked'
+                                                                         ? 'bg-error/10 text-error'
+                                                                         : 'bg-warning/10 text-warning'
+                                                                 }`}>
+                                                                     {user.accountStatus}
                                                                  </span>
                                                              </td>
                                                          </tr>
@@ -232,7 +273,7 @@ export default function AdminDashboard() {
                                                  </tbody>
                                              </table>
                                          ) : (
-                                             <p className="text-body-md text-gray-500 dark:text-gray-400 text-center py-4">No reported content requiring review.</p>
+                                             <p className="text-body-md text-gray-500 dark:text-gray-400 text-center py-4">No recent user registrations.</p>
                                          )}
                                      </div>
                                  </div>
@@ -241,9 +282,9 @@ export default function AdminDashboard() {
                                  <div className="card">
                                      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                                          <h2 className="text-headline-sm font-semibold">Pending Provider Approvals</h2>
-                                         <button className="btn-text flex items-center">
+                                         <Link href="/providers?accountStatus=pending" className="btn-text flex items-center">
                                              View All <ChevronRight size={16} />
-                                         </button>
+                                         </Link>
                                      </div>
                                      <div className="p-4">
                                          {pendingProviders.length > 0 ? (
@@ -259,16 +300,27 @@ export default function AdminDashboard() {
                                                  </thead>
                                                  <tbody>
                                                      {pendingProviders.map((item) => (
-                                                         <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800">
+                                                         <tr 
+                                                             key={item.id} 
+                                                             className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                                                             onClick={() => handleViewProvider(item.id)}
+                                                         >
                                                              <td className="py-3 text-body-md">{item.id}</td>
                                                              <td className="py-3 text-body-md">{item.name}</td>
                                                              <td className="py-3 text-body-md">{item.type}</td>
                                                              <td className="py-3 text-body-md">{item.submitted}</td>
                                                              <td className="py-3 text-body-md">
                                                                  <div className="flex space-x-2">
-                                                                     {/* Add actual click handlers here */}
-                                                                     <button className="btn-text text-success text-sm py-1">Approve</button>
-                                                                     <button className="btn-text text-error text-sm py-1">Deny</button>
+                                                                     {/* Navigate to provider details page */}
+                                                                     <button 
+                                                                         onClick={(e) => {
+                                                                             e.stopPropagation();
+                                                                             handleViewProvider(item.id);
+                                                                         }}
+                                                                         className="btn-text text-primary text-sm py-1"
+                                                                     >
+                                                                         View Details
+                                                                     </button>
                                                                  </div>
                                                              </td>
                                                          </tr>
@@ -288,19 +340,19 @@ export default function AdminDashboard() {
                                      <h2 className="text-headline-sm font-semibold">Quick Actions</h2>
                                  </div>
                                  <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                     {/* Quick action buttons... (unchanged) */}
-                                     <button className="btn-primary w-full flex justify-center items-center">
+                                     {/* Quick action buttons with navigation */}
+                                     <Link href="/users" className="btn-primary w-full flex justify-center items-center">
                                          <Users size={18} className="mr-2" />
                                          Manage Users
-                                     </button>
-                                     <button className="btn-outlined w-full flex justify-center items-center">
+                                     </Link>
+                                     <Link href="/analytics" className="btn-outlined w-full flex justify-center items-center">
                                          <BarChart2 size={18} className="mr-2" />
-                                         Generate Report
-                                     </button>
-                                     <button className="btn-outlined w-full flex justify-center items-center">
+                                         View Analytics
+                                     </Link>
+                                     <Link href="/settings" className="btn-outlined w-full flex justify-center items-center">
                                          <Settings size={18} className="mr-2" />
                                          System Settings
-                                     </button>
+                                     </Link>
                                  </div>
                             </div>
                         </>

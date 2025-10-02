@@ -17,23 +17,68 @@ const Card = ({ children, title }) => (
 const InsightsModal = ({ isOpen, onClose, insights, isLoading }) => {
     if (!isOpen) return null;
 
+    // Parse markdown-like formatting
+    const formatInsights = (text) => {
+        if (!text) return '';
+        
+        return text
+            // Headers (## Title)
+            .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-gray-800 dark:text-white mt-4 mb-2 flex items-center"><span class="w-1 h-5 bg-gradient-to-b from-purple-500 to-indigo-600 mr-2 rounded"></span>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-gray-800 dark:text-white mt-5 mb-3 flex items-center"><span class="w-1.5 h-6 bg-gradient-to-b from-purple-500 to-indigo-600 mr-2 rounded"></span>$1</h2>')
+            // Bold text
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
+            // Bullet points
+            .replace(/^- (.+)$/gm, '<li class="ml-4 mb-2 text-sm flex items-start"><span class="text-purple-500 mr-2 mt-1">•</span><span>$1</span></li>')
+            .replace(/^• (.+)$/gm, '<li class="ml-4 mb-2 text-sm flex items-start"><span class="text-purple-500 mr-2 mt-1">•</span><span>$1</span></li>')
+            // Numbered lists
+            .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 mb-2 text-sm flex items-start"><span class="text-purple-600 font-semibold mr-2 min-w-[20px]">$1.</span><span>$2</span></li>')
+            // Line breaks
+            .replace(/\n\n/g, '<div class="h-3"></div>')
+            .replace(/\n/g, '<br />');
+    };
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-2xl w-full transform transition-all duration-300 ease-in-out scale-95 hover:scale-100">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">✨ AI-Generated Insights</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
+            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-6 max-w-3xl w-full max-h-[85vh] transform transition-all duration-300 ease-in-out border border-gray-200 dark:border-gray-700">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-5 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-white">AI Insights</h2>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Gemini AI</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={onClose} 
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto pr-4 text-gray-600 dark:text-gray-300">
+
+                {/* Content */}
+                <div className="overflow-y-auto pr-2 text-sm text-gray-700 dark:text-gray-300" style={{ maxHeight: 'calc(85vh - 120px)' }}>
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center h-48">
-                            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-                            <p className="mt-4 text-lg">Generating analysis...</p>
+                        <div className="flex flex-col items-center justify-center h-64">
+                            <div className="relative">
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 dark:border-gray-700"></div>
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent absolute top-0"></div>
+                            </div>
+                            <p className="mt-6 text-base font-medium text-gray-600 dark:text-gray-400">Analyzing your data...</p>
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">This may take a few moments</p>
                         </div>
                     ) : (
-                        <div className="prose prose-lg dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: insights.replace(/\n/g, '<br />') }} />
+                        <div 
+                            className="leading-relaxed space-y-2" 
+                            dangerouslySetInnerHTML={{ __html: formatInsights(insights) }} 
+                        />
                     )}
                 </div>
             </div>
@@ -55,22 +100,27 @@ export const UserAnalyticsDashboard = ({ data }) => {
         setIsLoading(true);
 
         const prompt = `
-            Analyze the following user analytics data for a travel-related application and provide actionable insights.
-            The data includes user registrations over time, user roles (Travelers vs. Providers), and user status (Active vs. Blocked).
+            Analyze this travel app user analytics data and provide a CONCISE summary (max 250 words).
 
             Data:
             - Registrations Over Time: ${JSON.stringify(data.registrationsOverTime)}
-            - User Count by Role: ${JSON.stringify(data.countByRole)}
-            - User Count by Status: ${JSON.stringify(data.countByStatus)}
+            - User Roles: ${JSON.stringify(data.countByRole)}
+            - User Status: ${JSON.stringify(data.countByStatus)}
 
-            Please provide:
-            1.  A summary of the key trends observed in the data.
-            2.  Potential reasons for these trends (e.g., seasonality, marketing campaigns).
-            3.  Actionable recommendations to improve user growth, engagement, and retention.
-            Format the response in a clear, easy-to-read manner.
+            Provide a brief analysis with:
+            ## Key Growth Trends
+            - 2-3 main observations about user registration patterns
+            
+            ## User Demographics
+            - Brief analysis of role distribution (Travelers vs Providers)
+            
+            ## Quick Recommendations
+            - 3-4 actionable bullet points to improve user growth, engagement, and retention
+
+            Keep it concise, clear, and actionable. Use bullet points where possible.
         `;
 
-        let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+        const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
         const payload = { contents: chatHistory };
         const apiKey = "AIzaSyBBCO6gIeUcu0xFAirEjTbbg45znAYI19g"
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;

@@ -4,9 +4,8 @@ import 'reflect-metadata';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
 import MySideBar from "./components/MySideBar";
-import SignoutButton from './components/signoutButton';
+import Providers from "./components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +30,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} p-8 lg:ml-72 ml-0`}>
-      <ThemeProvider attribute="class">
+      <Providers>
         <MySideBar />
       {children}
-      </ThemeProvider>
+      </Providers>
       </body>
     </html>
   );

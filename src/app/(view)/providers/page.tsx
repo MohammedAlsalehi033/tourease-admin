@@ -6,18 +6,6 @@ import { ProviderController } from '@/app/(controller)/providers/providerControl
 
 const provider = container.resolve(ProviderController);
 
-async function approveTransporationProvider(providerId: string) {
-  'use server'
-  const response = await provider.approveTransportationProvider(providerId)
-  return response;
-}
-
-async function rejectTransporationProvider(providerId: string) {
-  'use server'
-  const response = await provider.rejectTransportationProvider(providerId)
-  return response;
-}
-
 async function getTransportationProviders(accountStatus = 'pending', page = 1 , pageSize = 10) {
   // Pass the accountStatus parameter to the API call
   const response = await provider.getPendingTransportationProviders(accountStatus, page, pageSize)
@@ -100,21 +88,9 @@ async function TransportationProviderTable({ accountStatus, search }) {
                 {provider.user.createdAt.toString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div className="flex flex-col space-y-2">
-                  <form action={approveTransporationProvider.bind(null, provider.providerId)}>
-                    <button type="submit" className="btn-primary text-sm py-1">
-                      Approve
-                    </button>
-                  </form>
-                  <form action={rejectTransporationProvider.bind(null, provider.providerId)}>
-                    <button type="submit" className="btn-outlined text-sm py-1 text-error">
-                      Reject
-                    </button>
-                  </form>
-                  <Link href={`/providers/${provider.providerId}`} className="btn-text text-primary text-center">
-                    View Details
-                  </Link>
-                </div>
+                <Link href={`/providers/${provider.providerId}`} className="btn-primary text-sm py-2 px-4 inline-block text-center">
+                  View Details
+                </Link>
               </td>
             </tr>
           ))}
@@ -186,17 +162,9 @@ async function AccommodationProviderTable({ accountStatus, search }) {
                 {provider.createdAt.toDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div className="flex flex-col space-y-2">
-                  <button className="btn-primary text-sm py-1">
-                    Approve
-                  </button>
-                  <button className="btn-outlined text-sm py-1 text-error">
-                    Reject
-                  </button>
-                  <Link href={`/providers/${provider.providerId}`} className="btn-text text-primary text-center">
-                    View Details
-                  </Link>
-                </div>
+                <Link href={`/providers/${provider.providerId}`} className="btn-primary text-sm py-2 px-4 inline-block text-center">
+                  View Details
+                </Link>
               </td>
             </tr>
           ))}

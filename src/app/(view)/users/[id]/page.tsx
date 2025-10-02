@@ -55,7 +55,7 @@ const UserProfilePage = () => {
         try {
             const userController = container.resolve(UserController);
             const blockResponse = await userController.blockUser(id);
-            alert(blockResponse?.message || "User status updated.");
+            alert(blockResponse?.message || "User blocked successfully.");
 
             if (blockResponse?.success && blockResponse?.data) {
                  setUser(blockResponse.data); 
@@ -74,19 +74,18 @@ const UserProfilePage = () => {
         }
     };
 
-
-    const handleActivateUser = async ()=>{
-               if (!id || !isBlocking) return;
-        const confirmBlock = window.confirm(`Are you sure you want to Unblock this user?`);
-        if (!confirmBlock) return;
+    const handleUnblockUser = async () => {
+        if (!id || isBlocking) return;
+        const confirmUnblock = window.confirm(`Are you sure you want to unblock this user?`);
+        if (!confirmUnblock) return;
         setIsBlocking(true);
         try {
             const userController = container.resolve(UserController);
-            const blockResponse = await userController.blockUser(id);
-            alert(blockResponse?.message || "User status updated.");
+            const unblockResponse = await userController.unblockUser(id);
+            alert(unblockResponse?.message || "User unblocked successfully.");
 
-            if (blockResponse?.success && blockResponse?.data) {
-                 setUser(blockResponse.data); 
+            if (unblockResponse?.success && unblockResponse?.data) {
+                 setUser(unblockResponse.data); 
             } else {
                  const updatedUser = await userController.getUserById(id);
                   if (updatedUser && updatedUser.data) {
@@ -96,11 +95,11 @@ const UserProfilePage = () => {
                  }
             }
         } catch (err: any) {
-            alert(`Failed to block user: ${err.message}`);
+            alert(`Failed to unblock user: ${err.message}`);
         } finally {
              setIsBlocking(false);
         }
-    }
+    };
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading user profile...</div>;
     }
@@ -163,18 +162,32 @@ const UserProfilePage = () => {
                         {renderListItem("Updated At", formatDate(user.updatedAt))}
                         <div className="md:col-span-2">{renderListItem("Roles", roleNames)}</div>
                     </div>
-                     <div className="mt-6 flex justify-end">
-                         <button
-                             onClick={handleBlockUser}
-                             disabled={isBlocking || user.accountStatus === 'blocked'}
-                             className={`btn-primary px-4 py-2 rounded text-white font-medium transition ${
-                                 isBlocking || user.accountStatus === 'blocked'
-                                 ? 'bg-gray-400 cursor-not-allowed'
-                                 : 'bg-red-600 hover:bg-red-700'
-                             }`}
-                         >
-                             {isBlocking ? 'Blocking...' : (user.accountStatus === 'blocked' ? 'User Blocked' : 'Block User')}
-                         </button>
+                     <div className="mt-6 flex justify-end gap-3">
+                         {user.accountStatus === 'blocked' ? (
+                             <button
+                                 onClick={handleUnblockUser}
+                                 disabled={isBlocking}
+                                 className={`px-4 py-2 rounded text-white font-medium transition ${
+                                     isBlocking
+                                     ? 'bg-gray-400 cursor-not-allowed'
+                                     : 'bg-green-600 hover:bg-green-700'
+                                 }`}
+                             >
+                                 {isBlocking ? 'Unblocking...' : 'Unblock User'}
+                             </button>
+                         ) : (
+                             <button
+                                 onClick={handleBlockUser}
+                                 disabled={isBlocking}
+                                 className={`px-4 py-2 rounded text-white font-medium transition ${
+                                     isBlocking
+                                     ? 'bg-gray-400 cursor-not-allowed'
+                                     : 'bg-red-600 hover:bg-red-700'
+                                 }`}
+                             >
+                                 {isBlocking ? 'Blocking...' : 'Block User'}
+                             </button>
+                         )}
                      </div>
                 </div>
 

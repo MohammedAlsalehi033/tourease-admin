@@ -41,4 +41,13 @@ export class UserController {
           throw error; // Re-throwing, potentially return { success: false, message: error.message } instead
      }
   }
+
+  async unblockUser(id: string): Promise<{ success: boolean; message?: string; data?: User }> {
+     try {
+         return await this.userRepository.unblockUser(id);
+     } catch (error: any) {
+          console.error(`Error in UserController unblockUser for ID ${id}:`, error.message);
+          throw error; // Re-throwing, potentially return { success: false, message: error.message } instead
+     }
+  } 
 }

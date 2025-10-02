@@ -178,10 +178,10 @@ const handleReject = async () => {
         </div>
         
         {/* Review & Response Section */}
-        <div className="card mb-8">
+        <div className="card mb-8 ">
           <h2 className="mb-4 text-headline-sm">Review Provider</h2>
           
-          <div className="mb-4">
+          <div className="mb-4 hidden">
             <label className="block text-title-md mb-2">Response Message</label>
             <textarea 
               className="input w-full h-32" 
@@ -212,7 +212,7 @@ const handleReject = async () => {
       </div>
       
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-800 shadow-lg p-4">
+      <div className="fixed bottom-0 left-0 w-full hidden bg-white dark:bg-gray-800 shadow-lg p-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex space-x-4">
             <button
