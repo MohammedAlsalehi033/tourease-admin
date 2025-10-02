@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
     HomeIcon, UsersIcon, Cog6ToothIcon,
     ChartBarIcon, ShieldCheckIcon, BuildingStorefrontIcon,
@@ -28,6 +29,7 @@ const AdminSidebar = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [textIndex, setTextIndex] = useState(0);
     const pathname = usePathname();
+    const { data: session, status } = useSession();
 
     const slogans = [
         "Manage with Precision.",
@@ -123,14 +125,15 @@ const AdminSidebar = () => {
                                         />
                                     );
                                 })}
-                                <div className="mt-6 px-4">
-                    <SignoutButton />
-                </div>
                             </div>
                         </div>
                     ))}
                 </nav>
-                
+                {status === 'authenticated' && (
+                    <div className="mt-6 px-4">
+                        <SignoutButton />
+                    </div>
+                )}
             </aside>
         </div>
     )
