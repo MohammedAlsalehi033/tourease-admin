@@ -227,7 +227,7 @@ const UserProfilePage = () => {
                         <div>
                             {user.transportationBookings.map((booking: any, index: number) => renderDetailItemCard(booking, index, 'Booking', {
                                 Status: booking.status,
-                                Price: `$${booking.totalPrice}`,
+                                Price: `PKR ${booking.totalPrice}`,
                                 Seats: booking.seatsBooked,
                                 Source: booking.bookingSource,
                                 Listing: booking.listing ? `(${booking.listing.id}) ${booking.listing.startLocationText} -> ${booking.listing.endLocationText}` : 'N/A',
@@ -245,7 +245,7 @@ const UserProfilePage = () => {
                         <div>
                             {user.accommodationBookings.map((booking: any, index: number) => renderDetailItemCard(booking, index, 'Booking', {
                                 Status: booking.status,
-                                Price: `$${booking.totalPrice}`,
+                                Price: `PKR ${booking.totalPrice}`,
                                 CheckIn: formatDate(booking.checkInDate),
                                 CheckOut: formatDate(booking.checkOutDate),
                                 RoomType: booking.room?.roomType,
@@ -280,7 +280,7 @@ const UserProfilePage = () => {
                         <div>
                             {user.receivedOffers.map((offer: any, index: number) => renderDetailItemCard(offer, index, 'Offer', {
                                 Status: offer.status,
-                                Price: `$${offer.pricePerSeat}/seat`,
+                                Price: `PKR ${offer.pricePerSeat}/seat`,
                                 Seats: offer.seatsRequested,
                                 // Sender: offer.sender?.username, // Included in getUserById? Check your include logic
                                 Listing: offer.listing?.id ? `Listing #${offer.listing.id}` : 'N/A',
@@ -298,7 +298,7 @@ const UserProfilePage = () => {
                         <div>
                             {user.sentOffers.map((offer: any, index: number) => renderDetailItemCard(offer, index, 'Offer', {
                                 Status: offer.status,
-                                Price: `$${offer.pricePerSeat}/seat`,
+                                Price: `PKR ${offer.pricePerSeat}/seat`,
                                 Seats: offer.seatsRequested,
                                 // Recipient: offer.recipient?.username, // Included in getUserById? Check your include logic
                                 Listing: offer.listing?.id ? `Listing #${offer.listing.id}` : 'N/A',
