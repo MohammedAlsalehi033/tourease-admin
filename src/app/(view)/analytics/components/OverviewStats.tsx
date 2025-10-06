@@ -25,21 +25,29 @@ const InsightsModal = ({ isOpen, onClose, insights, isLoading }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-2xl w-full transform transition-all duration-300 ease-in-out scale-95 hover:scale-100">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">✨ AI-Generated Insights</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 max-w-xl w-full transform transition-all duration-300">
+                <div className="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <span className="text-2xl">✨</span>
+                        AI Insights
+                    </h2>
+                    <button 
+                        onClick={onClose} 
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto pr-4 text-gray-600 dark:text-gray-300">
+                <div className="max-h-[65vh] overflow-y-auto pr-2 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center h-48">
-                            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-                            <p className="mt-4 text-lg">Generating analysis...</p>
+                        <div className="flex flex-col items-center justify-center h-40">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+                            <p className="mt-3 text-gray-500 dark:text-gray-400">Analyzing your data...</p>
                         </div>
                     ) : (
-                        <div className="prose prose-lg dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: insights.replace(/\n/g, '<br />') }} />
+                        <div className="space-y-3 whitespace-pre-wrap">{insights}</div>
                     )}
                 </div>
             </div>
@@ -59,20 +67,21 @@ const AnalyticsOverviewDashboard = ({ data }) => {
         setIsLoading(true);
 
         const prompt = `
-            Analyze the following high-level business overview data for a travel application.
+            Analyze this travel app overview data concisely:
 
-            Data:
-            - Total Users: ${data.totalUsers}
-            - Total Bookings: ${data.totalBookings}
-            - Total Revenue: $${data.totalRevenue.toFixed(2)}
-            - Average User Rating: ${data.averageRating.toFixed(2)}
-            - Booking Distribution: ${data.totalTransportationBookings} for Transportation, ${data.totalAccommodationBookings} for Accommodation.
+            📊 Data:
+            • Users: ${data.totalUsers}
+            • Bookings: ${data.totalBookings}
+            • Revenue: $${data.totalRevenue.toFixed(2)}
+            • Rating: ${data.averageRating.toFixed(2)}/5
+            • Split: ${data.totalTransportationBookings} Transportation, ${data.totalAccommodationBookings} Accommodation
 
-            Please provide:
-            1.  A summary of the overall business health based on these key performance indicators.
-            2.  An analysis of the booking distribution. Is there a significant imbalance? What might this indicate?
-            3.  Actionable recommendations to improve the weaker booking category and boost overall growth in users, bookings, and revenue.
-            Format the response clearly for a business executive.
+            Provide a brief analysis (max 200 words) covering:
+            1. Business health summary
+            2. Booking distribution insights
+            3. Top 2-3 actionable recommendations
+
+            Use bullet points and emojis. Be concise and executive-friendly.
         `;
 
         let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
@@ -130,9 +139,10 @@ const AnalyticsOverviewDashboard = ({ data }) => {
                     </div>
                     <button
                         onClick={handleGenerateInsights}
-                        className="mt-4 sm:mt-0 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+                        className="mt-4 sm:mt-0 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
                     >
-                        ✨ Generate Insights
+                        <span className="text-lg">✨</span>
+                        AI Insights
                     </button>
                 </header>
 
