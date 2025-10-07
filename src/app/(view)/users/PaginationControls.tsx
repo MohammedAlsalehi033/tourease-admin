@@ -16,14 +16,23 @@ export default function PaginationControls({
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startItem = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  // Debug logging
+  console.log('Pagination Debug:', {
+    currentPage,
+    totalItems,
+    itemsPerPage,
+    totalPages,
+    isNextDisabled: currentPage >= totalPages
+  });
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', newPage.toString());
-    router.push(`?${params.toString()}`);
+    router.push(`/users?${params.toString()}`);
   };
 
   return (
@@ -76,7 +85,7 @@ export default function PaginationControls({
         
         <button 
           className="btn-outlined text-sm py-1 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages || totalItems === 0}
           onClick={() => handlePageChange(currentPage + 1)}
         >
           Next

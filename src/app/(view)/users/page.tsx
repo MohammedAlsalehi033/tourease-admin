@@ -7,7 +7,7 @@ import {  UserController } from '@/app/(controller)/user/userController';
 import FilterSection from './FilterSection';
 import PaginationControls from './PaginationControls';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 30;
 
 
 async function UsersTable({ role, accountStatus, search, page }) {
@@ -35,10 +35,18 @@ async function UsersTable({ role, accountStatus, search, page }) {
     if (response.users) {
       users = response.users;
       totalUsers = response.pagination?.total || users.length;
+      console.log('Server response:', { 
+        usersCount: users.length, 
+        totalFromPagination: response.pagination?.total,
+        totalUsers,
+        currentPage: page,
+        pageSize: ITEMS_PER_PAGE
+      });
     } else if (Array.isArray(response)) {
       // Fallback for old API format
       users = response;
       totalUsers = users.length;
+      console.log('Array response (old format):', { usersCount: users.length, totalUsers });
     }
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -64,8 +72,8 @@ async function UsersTable({ role, accountStatus, search, page }) {
   // Render the table with data from backend
   return (
     <>
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
@@ -119,6 +127,7 @@ async function UsersTable({ role, accountStatus, search, page }) {
         </tbody>
       </table>
     </div>
+    
     <PaginationControls 
       currentPage={page}
       totalItems={totalUsers}
