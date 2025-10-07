@@ -27,6 +27,8 @@ export default function FilterSection() {
     if (filters.role) params.set('role', filters.role);
     if (filters.accountStatus) params.set('accountStatus', filters.accountStatus);
     if (filters.search) params.set('search', filters.search);
+    // Reset to page 1 when filters change
+    params.set('page', '1');
     
     // Navigate with the filters
     router.push(`?${params.toString()}`);

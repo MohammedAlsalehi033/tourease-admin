@@ -14,18 +14,39 @@ async function UsersTable({ role, accountStatus, search, page }) {
   const userController = container.resolve(UserController);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let users: any = [];
+  let totalUsers = 0;
+  
   try {
+    // Build filter object
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response: any = await userController.getAllUsers();
-    // Handle both array response and paginated response
-    users = Array.isArray(response) ? response : (response.users || []);
+    const filter: any = {};
+    if (role) filter.role = role;
+    if (accountStatus) filter.accountStatus = accountStatus;
+    if (search) {
+      filter.username = search;
+      filter.email = search;
+    }
+
+    // Call backend with pagination parameters
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await userController.getAllUsers(page, ITEMS_PER_PAGE, Object.keys(filter).length > 0 ? filter : undefined);
+    
+    // Extract users and pagination data from response
+    if (response.users) {
+      users = response.users;
+      totalUsers = response.pagination?.total || users.length;
+    } else if (Array.isArray(response)) {
+      // Fallback for old API format
+      users = response;
+      totalUsers = users.length;
+    }
   } catch (error) {
     console.error('Error fetching users:', error);
     return <div>Error fetching users : {(error as Error).message}</div>;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let transformedUsers = users.map((user: any) => {
+  const transformedUsers = users.map((user: any) => {
     
     return {
       id: user.id,
@@ -37,37 +58,10 @@ async function UsersTable({ role, accountStatus, search, page }) {
     };
   });
   
+  // Note: Filtering is now done on the backend via the filter parameter
+  // Client-side filtering removed as it's redundant with server-side filtering
   
-  if (accountStatus) {
-    transformedUsers = transformedUsers.filter(user => 
-      user.accountStatus.toLowerCase() === accountStatus.toLowerCase()
-    );
-  }
-  
-  if (search) {
-    const searchLower = search.toLowerCase();
-    transformedUsers = transformedUsers.filter(user => 
-      user.id.toLowerCase().includes(searchLower) ||
-      user.name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
-    );
-  }
-
-  if (role) {
-    transformedUsers = transformedUsers.filter(user => 
-      user.role.some(r => r.toLowerCase() === role.toLowerCase())
-    );
-  }
-
-  // Get total count before pagination
-  const totalUsers = transformedUsers.length;
-  
-  // Apply pagination
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedUsers = transformedUsers.slice(startIndex, endIndex);
-  
-  // Render the table with filtered and paginated data
+  // Render the table with data from backend
   return (
     <>
     <div className="overflow-x-auto">
@@ -84,7 +78,7 @@ async function UsersTable({ role, accountStatus, search, page }) {
           </tr>
         </thead>
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-          {paginatedUsers.map((user) => (
+          {transformedUsers.map((user) => (
             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.id}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.name}</td>
