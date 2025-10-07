@@ -5,19 +5,27 @@ import Link from 'next/link';
 import { container } from "@/app/lib/diContainer";
 import {  UserController } from '@/app/(controller)/user/userController';
 import FilterSection from './FilterSection';
+import PaginationControls from './PaginationControls';
+
+const ITEMS_PER_PAGE = 10;
 
 
-async function UsersTable({ role, accountStatus, search }) {
+async function UsersTable({ role, accountStatus, search, page }) {
   const userController = container.resolve(UserController);
-  let response: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let users: any = [];
   try {
-  response = await userController.getAllUsers(); 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await userController.getAllUsers();
+    // Handle both array response and paginated response
+    users = Array.isArray(response) ? response : (response.users || []);
   } catch (error) {
     console.error('Error fetching users:', error);
-    return <div>Error fetching users : {error.message}</div>;
+    return <div>Error fetching users : {(error as Error).message}</div>;
   }
 
-  let transformedUsers = response.map(user => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let transformedUsers = users.map((user: any) => {
     
     return {
       id: user.id,
@@ -50,9 +58,18 @@ async function UsersTable({ role, accountStatus, search }) {
       user.role.some(r => r.toLowerCase() === role.toLowerCase())
     );
   }
+
+  // Get total count before pagination
+  const totalUsers = transformedUsers.length;
   
-  // Render the table with filtered data
+  // Apply pagination
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedUsers = transformedUsers.slice(startIndex, endIndex);
+  
+  // Render the table with filtered and paginated data
   return (
+    <>
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
@@ -67,7 +84,7 @@ async function UsersTable({ role, accountStatus, search }) {
           </tr>
         </thead>
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-          {transformedUsers.map((user) => (
+          {paginatedUsers.map((user) => (
             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.id}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.name}</td>
@@ -108,6 +125,12 @@ async function UsersTable({ role, accountStatus, search }) {
         </tbody>
       </table>
     </div>
+    <PaginationControls 
+      currentPage={page}
+      totalItems={totalUsers}
+      itemsPerPage={ITEMS_PER_PAGE}
+    />
+    </>
   );
 }
 
@@ -164,9 +187,10 @@ export default function UserManagement({ searchParams }) {
   const role = searchParams?.role || '';
   const accountStatus = searchParams?.accountStatus || '';
   const search = searchParams?.search || '';
+  const page = parseInt(searchParams?.page || '1', 10);
   
 
-  console.log(accountStatus, role, search);
+  console.log(accountStatus, role, search, page);
 
   return (
     <div className="px-6 py-8">
@@ -189,30 +213,12 @@ export default function UserManagement({ searchParams }) {
       <div className="card">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-headline-sm font-semibold">User Accounts</h2>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Showing 10 of 235 users
-          </div>
         </div>
         
         <div className="p-4">
           <Suspense fallback={<UserTableSkeleton />}>
-            <UsersTable role={role} accountStatus={accountStatus} search={search} />
+            <UsersTable role={role} accountStatus={accountStatus} search={search} page={page} />
           </Suspense>
-          
-          <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of <span className="font-medium">235</span> results
-            </div>
-            
-            <div className="flex space-x-2">
-              <button className="btn-outlined text-sm py-1 px-3 disabled:opacity-50" disabled>
-                Previous
-              </button>
-              <button className="btn-outlined text-sm py-1 px-3">
-                Next
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
