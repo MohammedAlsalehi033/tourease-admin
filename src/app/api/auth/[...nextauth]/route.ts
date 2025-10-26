@@ -56,12 +56,64 @@ export const authOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        firebaseToken: { label: "Firebase Token", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email) return null;
 
-        // THIS IS THE MODIFIED PART: We use the REST API to get the refresh token
+        // Check if this is an OAuth sign-in (has firebaseToken)
+        if (credentials.firebaseToken) {
+          try {
+            // Verify the Firebase token
+            const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${process.env.FIREBASE_WEB_API_KEY}`;
+            const verifyResponse = await fetch(verifyUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                idToken: credentials.firebaseToken,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyResponse.ok && verifyData.users && verifyData.users[0]) {
+              const user = verifyData.users[0];
+              const nowInSeconds = Math.floor(Date.now() / 1000);
+              
+              // Get a fresh token and refresh token
+              const refreshUrl = `https://securetoken.googleapis.com/v1/token?key=${process.env.FIREBASE_WEB_API_KEY}`;
+              const refreshResponse = await fetch(refreshUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                  grant_type: 'refresh_token',
+                  refresh_token: credentials.firebaseToken,
+                }),
+              });
+
+              const refreshData = await refreshResponse.json();
+              const expiresIn = parseInt(refreshData.expires_in || '3600', 10);
+
+              return {
+                id: user.localId,
+                email: user.email,
+                name: user.displayName || user.email.split('@')[0],
+                image: user.photoUrl || null,
+                firebaseToken: refreshData.id_token || credentials.firebaseToken,
+                refreshToken: refreshData.refresh_token || credentials.firebaseToken,
+                expiresAt: nowInSeconds + expiresIn - 300,
+              };
+            }
+          } catch (error) {
+            console.error("Firebase token verification error:", error);
+            return null;
+          }
+        }
+
+        // Regular email/password sign-in
+        if (!credentials?.password) return null;
+
         try {
           const res = await fetch(
             `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_WEB_API_KEY}`,
@@ -106,7 +158,7 @@ export const authOptions = {
     signIn: '/login',
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
   },
   callbacks: {
     async jwt({ token, user }) {
