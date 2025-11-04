@@ -2,12 +2,12 @@ export type Environment = 'development' | 'production';
 
 const environments = {
   development: {
-    apiBaseUrl: 'http://localhost:3000/api',
-    adminApiBaseUrl: 'http://localhost:3000/api/admin'
+    apiBaseUrl: 'https://api.tourease.me/api',
+    adminApiBaseUrl: 'https://api.tourease.me/api/admin'
   },
   production: {
-    apiBaseUrl: 'http://13.201.19.41:3003/api',
-    adminApiBaseUrl: 'http://13.201.19.41:3003/api/admin'
+    apiBaseUrl: 'https://api.tourease.me/api',
+    adminApiBaseUrl: 'https://api.tourease.me/api/admin'
   }
 };
 
