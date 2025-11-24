@@ -119,7 +119,7 @@ export const ContentAnalyticsDashboard = ({ data }) => {
         const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
         const payload = { contents: chatHistory };
         const apiKey = "AIzaSyAADt7PpTCF2r3qlqpDPNiOpUhBEEls_5w"; // API key will be handled by the environment
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
         try {
             // Exponential backoff implementation

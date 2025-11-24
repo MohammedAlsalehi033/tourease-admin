@@ -22,8 +22,8 @@ export class ContentController {
     return this.contentRepository.getAllContent(page, pageSize, filter);
   }
 
-  async getCommentsByQuestionId(id: number): Promise<ContentItem | null> {
-    return this.contentRepository.getContentById(id);
+  async getCommentsByQuestionId(id: number): Promise<ContentItem[]> {
+    return this.contentRepository.getCommentsByQuestionId(id);
   }
 
   async blockQuestion(contentId: number, adminId: string = ""): Promise<BlockContentResponse> {

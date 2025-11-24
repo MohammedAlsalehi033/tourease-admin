@@ -26,7 +26,7 @@ async function deleteCommentAction(commentId: number, currentPath: string) {
   'use server';
   try {
     const commentsDI = container.resolve(ContentController);
-    await commentsDI.blockComment(commentId, /* adminId */);
+    await commentsDI.blockComment(commentId);
     revalidatePath(currentPath);
 
     return { success: true, message: 'Comment deleted successfully' };

@@ -310,51 +310,6 @@ export default function AnalyticsPage() {
                     )}
                 </div>
 
-                {/* Export Section */}
-                <div className="card mb-8">
-                    <h2 className="mb-4 text-headline-md">Export Data</h2>
-                    <div className="flex flex-wrap gap-4 items-end">
-                        <div>
-                            <label className="block text-title-sm mb-1">Report Type</label>
-                            <select
-                                value={reportType}
-                                onChange={(e: ChangeEvent<HTMLSelectElement>) => setReportType(e.target.value)}
-                                className="input w-full"
-                            >
-                                <option value="overview">Overview</option>
-                                <option value="users">Users</option>
-                                <option value="bookings_transportation">Transport Bookings</option>
-                                <option value="bookings_accommodation">Accommodation Bookings</option>
-                                <option value="content">Content</option>
-                                <option value="ratings">Ratings</option>
-                                <option value="providers">Providers</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-title-sm mb-1">Format</label>
-                            <select
-                                value={exportFormat}
-                                onChange={(e: ChangeEvent<HTMLSelectElement>) => setExportFormat(e.target.value as ExportFormat)}
-                                className="input w-full"
-                            >
-                                <option value="json">JSON</option>
-                                <option value="csv">CSV</option>
-                                <option value="pdf">PDF</option>
-                            </select>
-                        </div>
-                        <button
-                            className="btn-primary"
-                            onClick={handleExport}
-                            disabled={loading['export']}
-                        >
-                            {loading['export'] ? 'Exporting...' : 'Export'}
-                        </button>
-                    </div>
-                    {errors['export'] && <p className="text-error text-body-md mt-2">Export Error: {errors['export']}</p>}
-                </div>
-                <div>
-                    
-                </div>
             </div>
         </div>
     );

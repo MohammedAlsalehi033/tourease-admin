@@ -197,4 +197,28 @@ export class ContentRepository {
       throw error;
     }
   }
+
+  async getCommentsByQuestionId(questionId: number): Promise<ContentItem[]> {
+    try {
+      const responseData = await this.apiService.get<ContentApiResponse<ContentItem[]>>(
+        `/commments?id=${questionId}`
+      );
+      
+      if (!responseData.success || !responseData.data) {
+        return [];
+      }
+      
+      // Map comments with status information
+      const commentsWithStatus = responseData.data.map(comment => ({
+        ...comment,
+        status: comment.status || 'active',
+        flagCount: comment.downvotes || 0
+      }));
+      
+      return commentsWithStatus;
+    } catch (error) {
+      console.error("Error fetching comments by question ID:", error);
+      return [];
+    }
+  }
 }
