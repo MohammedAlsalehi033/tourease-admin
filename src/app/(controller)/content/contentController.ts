@@ -1,4 +1,4 @@
-// src/app/(controller)/content/contentController.ts
+git config pull.rebase false// src/app/(controller)/content/contentController.ts
 import { injectable, inject } from 'tsyringe';
 import { ContentRepository } from '@/app/(model)/content/contentRepo';
 import { 
