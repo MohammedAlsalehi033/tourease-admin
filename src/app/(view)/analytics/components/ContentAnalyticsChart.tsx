@@ -94,14 +94,18 @@ export const ContentAnalyticsDashboard = ({ data }) => {
         setIsModalOpen(true);
         setIsLoading(true);
 
+        const totalComments = Array.isArray(data.commentCounts) ? data.commentCounts.length : 0;
+        const totalVotes = Array.isArray(data.voteDistribution) ? data.voteDistribution.length : 0;
+
         const prompt = `
             Analyze this travel app content analytics data and provide a CONCISE summary (max 250 words).
 
             Data:
             - Questions Over Time: ${JSON.stringify(data.questionsOverTime)}
+            - Reviews Over Time: ${JSON.stringify(data.reviewsOverTime)}
             - Offer Status: ${JSON.stringify(data.offerStatusCounts)}
-            - Comments: ${data.commentCounts}
-            - Votes: ${data.voteDistribution}
+            - Comments: ${totalComments}
+            - Votes: ${totalVotes}
 
             Provide a brief analysis with:
             ## Key Trends
@@ -159,15 +163,24 @@ export const ContentAnalyticsDashboard = ({ data }) => {
     };
 
     // Prepare data for the charts
-    const questionsData = data.questionsOverTime.map(item => ({
+    const questionsData = data.questionsOverTime?.map(item => ({
         name: new Date(item.date).toLocaleString('en-US', { month: 'short', day: 'numeric' }),
         "Questions": item.count,
-    }));
+    })) || [];
 
-    const offerStatusData = data.offerStatusCounts;
+    const reviewsData = data.reviewsOverTime?.map(item => ({
+        name: new Date(item.date).toLocaleString('en-US', { month: 'short', day: 'numeric' }),
+        "Reviews": item.count,
+    })) || [];
+
+    const offerStatusData = data.offerStatusCounts || [];
+    
+    const totalComments = Array.isArray(data.commentCounts) ? data.commentCounts.length : 0;
+    const totalVotes = Array.isArray(data.voteDistribution) ? data.voteDistribution.length : 0;
+
     const engagementData = [
-        { name: 'Comments', count: data.commentCounts },
-        { name: 'Votes', count: data.voteDistribution }
+        { name: 'Comments', count: totalComments },
+        { name: 'Votes', count: totalVotes }
     ];
     const PIE_CHART_COLORS = { accepted: '#10b981', pending: '#f59e0b', rejected: '#ef4444' };
     const totalOffers = offerStatusData.reduce((acc, curr) => acc + curr.count, 0);
@@ -194,10 +207,10 @@ export const ContentAnalyticsDashboard = ({ data }) => {
                         <p className="text-4xl font-extrabold text-cyan-500">{totalOffers}</p>
                     </Card>
                     <Card title="Total Comments">
-                        <p className="text-4xl font-extrabold text-teal-500">{data.commentCounts}</p>
+                        <p className="text-4xl font-extrabold text-teal-500">{totalComments}</p>
                     </Card>
                     <Card title="Total Votes">
-                        <p className="text-4xl font-extrabold text-emerald-500">{data.voteDistribution}</p>
+                        <p className="text-4xl font-extrabold text-emerald-500">{totalVotes}</p>
                     </Card>
                 </div>
 
@@ -232,7 +245,25 @@ export const ContentAnalyticsDashboard = ({ data }) => {
                             </ResponsiveContainer>
                         </div>
                     </Card>
-                     <div className="lg:col-span-3">
+                    
+                    <div className="lg:col-span-2">
+                        <Card title="Reviews Over Time">
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={reviewsData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
+                                        <XAxis dataKey="name" stroke="rgb(156 163 175)" />
+                                        <YAxis stroke="rgb(156 163 175)" />
+                                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: 'rgba(55, 65, 81, 1)', color: '#ffffff', borderRadius: '0.5rem' }} />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="Reviews" stroke="#8b5cf6" strokeWidth={2} activeDot={{ r: 8 }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Card>
+                    </div>
+
+                     <div className="lg:col-span-1">
                         <Card title="Engagement Metrics Comparison">
                             <div className="h-80">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -242,8 +273,9 @@ export const ContentAnalyticsDashboard = ({ data }) => {
                                         <YAxis stroke="rgb(156 163 175)" />
                                         <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: 'rgba(55, 65, 81, 1)', color: '#ffffff', borderRadius: '0.5rem' }} />
                                         <Bar dataKey="count" barSize={60}>
-                                             <Cell fill="#34d399" />
-                                             <Cell fill="#22d3ee" />
+                                            {engagementData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={index === 0 ? "#34d399" : "#22d3ee"} />
+                                            ))}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>

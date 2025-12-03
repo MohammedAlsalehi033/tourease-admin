@@ -166,14 +166,25 @@ export const UserAnalyticsDashboard = ({ data }) => {
 
 
     // Prepare data for the charts
-    const registrationsData = data.registrationsOverTime.map(item => ({
+    const registrationsData = data.registrationsOverTime?.map(item => ({
         name: new Date(item.date).toLocaleString('en-US', { month: 'short', day: 'numeric' }),
         "New Users": item.count,
-    }));
+    })) || [];
 
-    const roleData = data.countByRole;
-    const statusData = data.countByStatus;
-    const PIE_CHART_COLORS = ['#3b82f6', '#10b981']; 
+    const roleData = data.countByRole?.map(item => ({
+        ...item,
+        category: item.category
+            .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+            .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+    })) || [];
+
+    const statusData = data.countByStatus?.map(item => ({
+        ...item,
+        category: item.category.charAt(0).toUpperCase() + item.category.slice(1)
+    })) || [];
+
+    const PIE_CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899']; 
+    
     const totalUsers = roleData.reduce((acc, curr) => acc + curr.count, 0);
     const activeUsers = statusData.find(s => s.category === 'Active')?.count || 0;
     const blockedUsers = statusData.find(s => s.category === 'Blocked')?.count || 0;

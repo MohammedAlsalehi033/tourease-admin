@@ -3,31 +3,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 
 // --- Mock Data ---
 // Using a representative structure for rating analytics.
-const ratingAnalyticsApiData = {
-    ratingDistribution: [
-        { rating: 1, count: 5 },
-        { rating: 2, count: 10 },
-        { rating: 3, count: 15 },
-        { rating: 4, count: 30 },
-        { rating: 5, count: 50 }
-    ],
-    ratingsByPeriod: [
-        { period: 'Jan', averageRating: 3.8 },
-        { period: 'Feb', averageRating: 4.1 },
-        { period: 'Mar', averageRating: 4.0 },
-        { period: 'Apr', averageRating: 4.3 },
-        { period: 'May', averageRating: 4.5 },
-        { period: 'Jun', averageRating: 4.4 }
-    ],
-    ratingsByReviewableType: [
-        { reviewableType: 'Provider', averageRating: 4.5, count: 60 },
-        { reviewableType: 'Traveler', averageRating: 4.2, count: 50 }
-    ],
-    totalRatings: 110,
-    averageRating: 4.25,
-    positiveRatingRatio: 0.81, // (4s + 5s) / total
-    negativeRatingRatio: 0.13 // (1s + 2s) / total
-};
+// const ratingAnalyticsApiData = { ... }; // Removed as it is not used and data is passed via props
 
 // --- Helper Components ---
 
@@ -117,6 +93,32 @@ export const RatingAnalyticsDashboard = ({ data }) => {
     const [insights, setInsights] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Process Data
+    const totalRatings = data.ratingDistribution?.reduce((acc, curr) => acc + curr.count, 0) || 0;
+    
+    const positiveRatingsCount = data.ratingDistribution
+        ?.filter((item) => item.category >= 4)
+        .reduce((acc, curr) => acc + curr.count, 0) || 0;
+
+    const negativeRatingsCount = data.ratingDistribution
+        ?.filter((item) => item.category <= 2)
+        .reduce((acc, curr) => acc + curr.count, 0) || 0;
+
+    const positiveRatingRatio = totalRatings > 0 ? positiveRatingsCount / totalRatings : 0;
+    const negativeRatingRatio = totalRatings > 0 ? negativeRatingsCount / totalRatings : 0;
+
+    const ratingDistribution = data.ratingDistribution?.map((item) => ({
+        rating: item.category,
+        count: item.count
+    })) || [];
+
+    const ratingsByType = data.averageRatingByType?.map((item) => ({
+        reviewableType: item.category.replace(/_/g, ' '),
+        averageRating: item.average
+    })) || [];
+
+    const ratingsOverTime = data.ratingTrends || [];
+
     const handleGenerateInsights = async () => {
         setIsModalOpen(true);
         setIsLoading(true);
@@ -125,10 +127,10 @@ export const RatingAnalyticsDashboard = ({ data }) => {
             Analyze this travel app rating data and provide a CONCISE summary (max 250 words).
 
             Data:
-            - Rating Distribution (1-5 stars): ${JSON.stringify(data.ratingDistribution)}
-            - Average Ratings Over Time: ${JSON.stringify(data.ratingsByPeriod)}
-            - Ratings by User Type: ${JSON.stringify(data.ratingsByReviewableType)}
-            - Key Metrics: Total: ${data.totalRatings}, Average: ${data.averageRating}, Positive: ${(data.positiveRatingRatio * 100)}%, Negative: ${(data.negativeRatingRatio * 100)}%
+            - Rating Distribution (1-5 stars): ${JSON.stringify(ratingDistribution)}
+            - Average Ratings Over Time: ${JSON.stringify(ratingsOverTime)}
+            - Ratings by User Type: ${JSON.stringify(ratingsByType)}
+            - Key Metrics: Total: ${totalRatings}, Average: ${data.averageRatingOverall}, Positive: ${(positiveRatingRatio * 100).toFixed(1)}%, Negative: ${(negativeRatingRatio * 100).toFixed(1)}%
 
             Provide a brief analysis with:
             ## Overall Sentiment
@@ -182,10 +184,6 @@ export const RatingAnalyticsDashboard = ({ data }) => {
         }
     };
 
-    const ratingDistribution = data.ratingDistribution;
-    const ratingsOverTime = data.ratingsByPeriod;
-    const ratingsByType = data.ratingsByReviewableType;
-
     return (
         <>
             <div className="p-4 sm:p-6 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
@@ -203,10 +201,10 @@ export const RatingAnalyticsDashboard = ({ data }) => {
                 </header>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card title="Total Ratings"><p className="text-4xl font-extrabold text-orange-500">{data.totalRatings}</p></Card>
-                    <Card title="Average Rating"><p className="text-4xl font-extrabold text-amber-500">⭐ {data.averageRating}</p></Card>
-                    <Card title="Positive Reviews"><p className="text-4xl font-extrabold text-green-500">{(data.positiveRatingRatio * 100)}%</p></Card>
-                    <Card title="Negative Reviews"><p className="text-4xl font-extrabold text-red-500">{(data.negativeRatingRatio * 100)}%</p></Card>
+                    <Card title="Total Ratings"><p className="text-4xl font-extrabold text-orange-500">{totalRatings}</p></Card>
+                    <Card title="Average Rating"><p className="text-4xl font-extrabold text-amber-500">⭐ {data.averageRatingOverall?.toFixed(2)}</p></Card>
+                    <Card title="Positive Reviews"><p className="text-4xl font-extrabold text-green-500">{(positiveRatingRatio * 100).toFixed(0)}%</p></Card>
+                    <Card title="Negative Reviews"><p className="text-4xl font-extrabold text-red-500">{(negativeRatingRatio * 100).toFixed(0)}%</p></Card>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -246,7 +244,6 @@ export const RatingAnalyticsDashboard = ({ data }) => {
                                         <PolarAngleAxis dataKey="reviewableType" />
                                         <PolarRadiusAxis angle={30} domain={[0, 5]} />
                                         <Radar name="Average Rating" dataKey="averageRating" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
-                                        <Radar name="Total Ratings" dataKey="count" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
                                         <Tooltip />
                                         <Legend />
                                     </RadarChart>

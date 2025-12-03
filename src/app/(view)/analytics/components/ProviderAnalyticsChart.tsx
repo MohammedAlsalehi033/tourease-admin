@@ -154,9 +154,29 @@ export const TransportationAnalyticsDashboard = ({ data }) => {
         }
     };
 
-    const statusData = data.transportProviderStatusCounts;
-    const activeProviders = statusData.find(s => s.category === 'active')?.count || 0;
-    const PIE_COLORS = { active: '#10b981', inactive: '#6b7280', pending: '#f59e0b' };
+    const statusData = data.transportProviderStatusCounts?.map(item => ({
+        ...item,
+        category: item.category.charAt(0).toUpperCase() + item.category.slice(1)
+    })) || [];
+
+    const activeProviders = statusData.find(s => s.category === 'Active')?.count || 0;
+    
+    // Calculate counts for array data
+    const newApplicationsCount = Array.isArray(data.providerApplicationsOverTime) 
+        ? data.providerApplicationsOverTime.length 
+        : 0;
+        
+    const topPerformersCount = Array.isArray(data.topPerformingProviders) 
+        ? data.topPerformingProviders.length 
+        : 0;
+
+    const PIE_COLORS = { 
+        'Active': '#10b981', 
+        'Inactive': '#6b7280', 
+        'Pending': '#f59e0b',
+        'Rejected': '#ef4444',
+        'Suspended': '#dc2626'
+    };
 
     return (
         <>
@@ -177,8 +197,8 @@ export const TransportationAnalyticsDashboard = ({ data }) => {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <Card title="Active Transport"><p className="text-4xl font-extrabold text-lime-500">{activeProviders}</p></Card>
                     <Card title="Accommodation"><p className="text-4xl font-extrabold text-red-500">{data.accommodationProviderCount}</p></Card>
-                    <Card title="New Applications"><p className="text-4xl font-extrabold text-emerald-500">{data.providerApplicationsOverTime}</p></Card>
-                    <Card title="Top Performers"><p className="text-4xl font-extrabold text-green-500">{data.topPerformingProviders}</p></Card>
+                    <Card title="New Applications"><p className="text-4xl font-extrabold text-emerald-500">{newApplicationsCount}</p></Card>
+                    <Card title="Top Performers"><p className="text-4xl font-extrabold text-green-500">{topPerformersCount}</p></Card>
                 </div>
 
                 <div className="grid grid-cols-1 gap-8">
@@ -187,7 +207,7 @@ export const TransportationAnalyticsDashboard = ({ data }) => {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie data={statusData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} fill="#8884d8" dataKey="count" nameKey="category" paddingAngle={5}>
-                                        {statusData.map((entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[entry.category]} />)}
+                                        {statusData.map((entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[entry.category] || '#9ca3af'} />)}
                                     </Pie>
                                     <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: 'rgba(55, 65, 81, 1)', color: '#ffffff', borderRadius: '0.5rem' }} />
                                     <Legend />
